@@ -1,0 +1,14 @@
+Parameter;Value
+input_file_path;input_files/
+output_file_path;output_files/
+static_map_path;static/map/
+input_file_name;hospitalesEspanaDataSet.csv
+here_API_key;cW7fYkl9rgzC2epupFUTZW1gAk56Y9PUnR_bRq6ltgI
+city_name_zip_code_list;['SEVILLA', 'CADIZ', 'HUELVA', 'MADRID', 'BARCELONA']
+ALGORITHM_OPTION;1
+MAX_STOCK;7000
+VEHICLE_CAPACITY;1000
+MAX_KM;300
+USE_ALL_FLEET;False
+n_services;180
+n_vehicles;20
