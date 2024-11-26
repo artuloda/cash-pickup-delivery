@@ -24,8 +24,11 @@ class Parameters:
     def set_seed(self):
         """
         Set the seed for the random number generator
+
+        Returns:
+            int: The execution seed
         """
-        random_seed = 12345678 # random.randint(1, 1000000000)
+        random_seed = 123456789 # random.randint(1, 1000000000)
         random.seed(random_seed)
         np.random.seed(random_seed)
         return random_seed

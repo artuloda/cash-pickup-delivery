@@ -6,33 +6,39 @@ class Instance:
     def __init__(self, context: Context):
         self.random = Random()
         self.context = context
-        self.distances = self.load_distances()
         self.demands = self.load_demands()
         self.nodes_ids = self.load_nodes_ids()
+        self.distances = self.load_distances()
         self.validate()
 
-    def load_distances(self):
-        """
-        Load the distances matrix
-        """
-        distances = np.random.randint(5, 50, size=(self.context.parameters.n_services + 1, self.context.parameters.n_services + 1))
-        np.fill_diagonal(distances, 0)  # No self-loop cost
-        return distances
 
     def load_demands(self):
         """
         Load the demands vector
         """
-        demands = np.random.randint(-200, 200, size=self.context.parameters.n_services + 1)
+        demands = np.random.randint(-200, 200, size=self.context.parameters.n_services)
         demands = np.append(0, demands)  # Depot demand is 0
         return demands
+    
 
     def load_nodes_ids(self):
         """
         Load the nodes ids vector
         """
-        nodes_ids = np.arange(self.context.parameters.n_services + 1)
+        nodes_ids = []
+        for i in range(self.context.parameters.n_services + 1):
+            nodes_ids.append(i)
         return nodes_ids
+    
+    
+    def load_distances(self):
+        """
+        Load the distances matrix
+        """
+        distances = np.random.randint(5, 100, size=(self.context.parameters.n_services + 1, self.context.parameters.n_services + 1))
+        np.fill_diagonal(distances, 0)  # No self-loop cost
+        return distances
+    
 
     def validate(self):
         """
@@ -48,4 +54,6 @@ class Instance:
 
 
     def __str__(self):
-        return f"Instance(total_demand={sum(self.demands)}, total_nodes={len(self.nodes_ids)})"
+        class_str = f"Total_demand={sum(self.demands)}"
+        class_str += f"\nTotal_nodes={len(self.nodes_ids)}"
+        return class_str

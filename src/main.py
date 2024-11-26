@@ -1,8 +1,6 @@
 import time
-import numpy as np
 from algorithm import Instance, Solution, Context
-# from algorithm import Problem, Instance, Solution, PreValidation, PostValidation
-# from model import Algorithm
+
 
 def print_ASCII_logo():
     logo_str =  """
@@ -38,9 +36,8 @@ def execute():
 
     solution = Solution(context, instance)
     solution.solve()
-    routes, total_distance, storage_cost, total_cost, unserved = solution.routes, solution.total_distance, solution.storage_cost, solution.total_cost, solution.unserved
 
-    print_solution(routes, total_distance, storage_cost, total_cost, unserved)
+    print_solution(solution.routes, solution.total_distance, solution.storage_cost, solution.total_cost, solution.unserved)
     print(f"Time taken: {time.time() - start_time} s.")
 
 
@@ -62,7 +59,7 @@ def print_solution(routes: list, total_distance: int, storage_cost: int, total_c
     print(f"\nUnserved services: {unserved}")
     print(f"Total distance traveled: {total_distance}")
     print(f"Depot storage cost: {storage_cost}")
-    print(f"Total cost: {total_cost}")
+    print(f"Total cost: {round(total_cost, 2)} €")
     
 
 if __name__ == '__main__':
