@@ -1,5 +1,5 @@
 import time
-from algorithm import Instance, Solution, Context, ExactSolution
+from algorithm import Instance, Context, Algorithm, Results
 
 
 def print_ASCII_logo():
@@ -25,44 +25,27 @@ def print_ASCII_logo():
 
 
 def execute():
+    """
+    Executes the algorithm
+    """
     start_time = time.time()
 
-    # Context
+    # Problem Context
     context = Context()
+    context.logger.info(context.parameters)
 
     # Instance
     instance = Instance(context)
-    print(instance)
+    context.logger.info(instance)
 
-    solution = Solution(context, instance)
-    solution.solve()
+    # Algorithm
+    algorithm = Algorithm(context, instance)
+    algorithm.print_results()
 
-    # exact_solution = ExactSolution(context, instance)
-    # exact_solution.solve()
+    # Results
+    Results(context, instance, algorithm.best_solution)
 
-    print_solution(solution.routes, solution.total_distance, solution.storage_cost, solution.total_cost, solution.unserved)
-    print(f"Time taken: {time.time() - start_time} s.")
-
-
-def print_solution(routes: list, total_distance: int, storage_cost: int, total_cost: int, unserved: set):
-    """
-    Print the solution
-
-    Args:
-        routes (list): Routes per vehicle
-        total_distance (int): Total distance traveled
-        storage_cost (int): Depot storage cost
-        total_cost (int): Total cost
-        unserved (set): Unserved services
-    """
-    print("Routes per vehicle:")
-    for v, route in enumerate(routes):
-        print(f"  Vehicle {v + 1}: Depot -> {' -> '.join(map(str, route))} -> Depot")
-
-    print(f"\nUnserved services: {unserved}")
-    print(f"Total distance traveled: {total_distance}")
-    print(f"Depot storage cost: {storage_cost}")
-    print(f"Total cost: {round(total_cost, 2)} €")
+    context.logger.info(f"Time taken: {time.time() - start_time} s.")
     
 
 if __name__ == '__main__':

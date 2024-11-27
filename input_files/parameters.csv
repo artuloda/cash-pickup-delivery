@@ -10,5 +10,5 @@ MAX_STOCK;7000
 VEHICLE_CAPACITY;1000
 MAX_KM;300
 USE_ALL_FLEET;False
-n_services;300
+n_services;100
 n_vehicles;20

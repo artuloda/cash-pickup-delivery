@@ -1,4 +1,3 @@
-import numpy as np
 from algorithm import Instance, Context
 
 class Solution:
@@ -6,7 +5,7 @@ class Solution:
         self.context = context
         self.instance = instance
         self.initialize_solution()
-        
+
 
     def initialize_solution(self):
         self.routes = [[] for _ in range(self.context.parameters.n_vehicles)]
@@ -16,7 +15,7 @@ class Solution:
         self.current_stock = sum(-min(demand, 0) for demand in self.instance.demands)  # Initial stock in depot
         self.total_distance = 0
         self.storage_cost = 0
-        self.total_cost = 0
+        self.fitness = 0
 
 
     def solve(self):
@@ -29,7 +28,7 @@ class Solution:
             while self.unserved:
 
                 # Find the nearest feasible node
-                candidate_nodes = self.find_feasible_nodes(current_node)
+                candidate_nodes = self.find_feasible_nodes(current_node, self.remaining_capacity[vehicle], self.remaining_km[vehicle])
                 if not candidate_nodes:
                     break  # No more feasible nodes for this vehicle
 
@@ -51,7 +50,8 @@ class Solution:
 
         # Calculate storage stock and total cost
         self.storage_cost = self.calculate_storage_cost(self.current_stock)
-        self.total_cost = self.calculate_total_cost(self.total_distance)
+        self.fitness = self.calculate_total_cost(self.total_distance)
+        # self.print_solution()
 
     
     def calculate_storage_cost(self, current_stock: int) -> int:
@@ -73,7 +73,7 @@ class Solution:
         return total_distance * 0.45
 
 
-    def find_feasible_nodes(self, current_node: int) -> list:
+    def find_feasible_nodes(self, current_node: int, remaining_capacity: list, remaining_km: list) -> list:
         """
         Find the feasible nodes for a given vehicle. Ensuring capacity, mileage, and stock constraints
 
@@ -86,10 +86,9 @@ class Solution:
         """
         candidate_nodes = [
             (node, self.instance.distances[current_node][node]) for node in self.unserved
-            if (
-                self.context.parameters.VEHICLE_CAPACITY >= abs(self.instance.demands[node]) and
-                self.context.parameters.MAX_KM >= self.instance.distances[current_node][node] + self.instance.distances[node][0] and
-                (self.current_stock + self.instance.demands[node] <= self.context.parameters.MAX_STOCK if self.instance.demands[node] > 0 else True)
+            if not (
+                remaining_capacity < abs(self.instance.demands[node]) or 
+                remaining_km < self.instance.distances[current_node][node]
             )
         ]
         return candidate_nodes
@@ -142,8 +141,9 @@ class Solution:
         print(f"Remaining km: {self.remaining_km}")
         print(f"Total distance: {self.total_distance}")
         print(f"Storage cost: {self.storage_cost}")
-        print(f"Total cost: {self.total_cost}")
+        print(f"Fitness: {self.fitness}")
+        print("-----------------------------------------------------------------------------------")
     
 
     def __str__(self):
-        return f"Solution(routes={self.routes}, total_distance={self.total_distance}, storage_cost={self.storage_cost}, total_cost={self.total_cost}, unserved={self.unserved})"
+        return f"Solution(routes={self.routes}, total_distance={self.total_distance}, storage_cost={self.storage_cost}, total_cost={self.fitness}, unserved={self.unserved})"

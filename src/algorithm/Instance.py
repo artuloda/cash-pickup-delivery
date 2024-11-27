@@ -56,4 +56,5 @@ class Instance:
     def __str__(self):
         class_str = f"Total_demand={sum(self.demands)}"
         class_str += f"\nTotal_nodes={len(self.nodes_ids)}"
+        class_str += f"\nTotal_orders={len(self.demands)}"
         return class_str
