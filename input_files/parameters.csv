@@ -7,8 +7,8 @@ here_API_key;cW7fYkl9rgzC2epupFUTZW1gAk56Y9PUnR_bRq6ltgI
 city_name_zip_code_list;['SEVILLA', 'CADIZ', 'HUELVA', 'MADRID', 'BARCELONA']
 ALGORITHM_OPTION;1
 MAX_STOCK;7000
-VEHICLE_CAPACITY;100
+VEHICLE_CAPACITY;1000
 MAX_KM;300
 USE_ALL_FLEET;False
-n_services;130
+n_services;300
 n_vehicles;20

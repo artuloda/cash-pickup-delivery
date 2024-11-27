@@ -1,5 +1,5 @@
 import time
-from algorithm import Instance, Solution, Context
+from algorithm import Instance, Solution, Context, ExactSolution
 
 
 def print_ASCII_logo():
@@ -36,6 +36,9 @@ def execute():
 
     solution = Solution(context, instance)
     solution.solve()
+
+    # exact_solution = ExactSolution(context, instance)
+    # exact_solution.solve()
 
     print_solution(solution.routes, solution.total_distance, solution.storage_cost, solution.total_cost, solution.unserved)
     print(f"Time taken: {time.time() - start_time} s.")

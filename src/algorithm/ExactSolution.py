@@ -1,12 +1,11 @@
 import numpy as np
 from algorithm import Instance, Context
 
-class Solution:
+class ExactSolution:
     def __init__(self, context: Context, instance: Instance):
         self.context = context
         self.instance = instance
         self.initialize_solution()
-        
 
     def initialize_solution(self):
         self.routes = [[] for _ in range(self.context.parameters.n_vehicles)]
@@ -17,7 +16,6 @@ class Solution:
         self.total_distance = 0
         self.storage_cost = 0
         self.total_cost = 0
-
 
     def solve(self):
         """
