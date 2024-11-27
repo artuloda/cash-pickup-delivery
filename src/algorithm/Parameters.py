@@ -12,6 +12,8 @@ class Parameters:
         self.output_file_path = str(parameters_dict['output_file_path'])
         self.here_API_key = str(parameters_dict['here_API_key'])
         self.city_name_zip_code_list = str(parameters_dict['city_name_zip_code_list'])
+        self.MAX_ITERATIONS = int(parameters_dict['MAX_ITERATIONS'])
+        self.MAX_TIME = int(parameters_dict['MAX_TIME'])
         self.ALGORITHM_OPTION = int(parameters_dict['ALGORITHM_OPTION'])
         self.MAX_STOCK = int(parameters_dict['MAX_STOCK'])
         self.VEHICLE_CAPACITY = int(parameters_dict['VEHICLE_CAPACITY'])
@@ -41,6 +43,8 @@ class Parameters:
         class_str += 'Instance here_API_key: ' + str(self.here_API_key) + '\n'
         class_str += 'Instance city_name_zip_code_list: ' + str(self.city_name_zip_code_list) + '\n'
         class_str += 'Instance ALGORITHM_OPTION: ' + str(self.ALGORITHM_OPTION) + '\n'
+        class_str += 'Instance MAX_ITERATIONS: ' + str(self.MAX_ITERATIONS) + '\n'
+        class_str += 'Instance MAX_TIME: ' + str(self.MAX_TIME) + '\n'
         class_str += 'Instance MAX_STOCK: ' + str(self.MAX_STOCK) + '\n'
         class_str += 'Instance VEHICLE_CAPACITY: ' + str(self.VEHICLE_CAPACITY) + '\n'
         class_str += 'Instance MAX_KM: ' + str(self.MAX_KM) + '\n'

@@ -8,3 +8,4 @@ geopy==2.4.1
 shapely==2.0.4
 scipy==1.13.1
 scikit-learn==1.5.2
+PuLP==2.9.0

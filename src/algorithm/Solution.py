@@ -28,16 +28,12 @@ class Solution:
             while self.unserved:
 
                 # Find the nearest feasible node
-                candidate_nodes = self.find_feasible_nodes(current_node, self.remaining_capacity[vehicle], self.remaining_km[vehicle])
+                candidate_nodes = self.find_feasible_nodes(current_node, vehicle)
                 if not candidate_nodes:
                     break  # No more feasible nodes for this vehicle
 
                 # Select the next node to visit
                 node, distance = self.select_next_node(candidate_nodes)
-
-                # Check if the vehicle can serve this node
-                if self.remaining_capacity[vehicle] < abs(self.instance.demands[node]) or self.remaining_km[vehicle] < distance:
-                    break  # Cannot serve this node, end route
 
                 # Append node to route
                 self.add_node_to_route(vehicle, node, distance)
@@ -50,7 +46,7 @@ class Solution:
 
         # Calculate storage stock and total cost
         self.storage_cost = self.calculate_storage_cost(self.current_stock)
-        self.fitness = self.calculate_total_cost(self.total_distance)
+        self.fitness = self.calculate_total_cost(self.total_distance) + self.storage_cost
         # self.print_solution()
 
     
@@ -73,7 +69,7 @@ class Solution:
         return total_distance * 0.45
 
 
-    def find_feasible_nodes(self, current_node: int, remaining_capacity: list, remaining_km: list) -> list:
+    def find_feasible_nodes(self, current_node: int, vehicle: int) -> list:
         """
         Find the feasible nodes for a given vehicle. Ensuring capacity, mileage, and stock constraints
 
@@ -84,11 +80,12 @@ class Solution:
         Returns:
             list: Candidate nodes
         """
+        depot_node = 0  # Assuming the depot is node 0
         candidate_nodes = [
             (node, self.instance.distances[current_node][node]) for node in self.unserved
             if not (
-                remaining_capacity < abs(self.instance.demands[node]) or 
-                remaining_km < self.instance.distances[current_node][node]
+                self.remaining_capacity[vehicle] < abs(self.instance.demands[node]) or 
+                self.remaining_km[vehicle] < (self.instance.distances[current_node][node] + self.instance.distances[node][depot_node])
             )
         ]
         return candidate_nodes

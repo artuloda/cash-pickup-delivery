@@ -48,16 +48,14 @@ class Algorithm:
         """
         self.context.logger.info("Constructing solutions...")
         start_time = time.time()
-        MAX_ITERATIONS = 10
-        MAX_TIME = 300
         iteration = 0
-        while iteration < MAX_ITERATIONS and time.time() - start_time < MAX_TIME:
+        while iteration < self.context.parameters.MAX_ITERATIONS and time.time() - start_time < self.context.parameters.MAX_TIME:
             start_time_iteration = time.time()
             # Create a new solution
             if self.context.parameters.ALGORITHM_OPTION == 1:
                 solution = Solution(self.context, self.instance)
-            # else:
-            #     solution = ExactSolution(self.context, self.instance)
+            else:
+                solution = ExactSolution(self.context, self.instance)
             solution.solve()
             self.add_solution(solution)
 
@@ -88,7 +86,9 @@ class Algorithm:
         """
         print("Routes per vehicle:")
         for v, route in enumerate(self.best_solution.routes):
-            print(f"  Vehicle {v + 1}: Depot -> {' -> '.join(map(str, route))} -> Depot")
+            remaining_capacity = self.best_solution.remaining_capacity[v]  # Assuming capacities is a list of used capacities per vehicle
+            remaining_km = self.best_solution.remaining_km[v]  # Assuming remaining_km is a list of used km per vehicle
+            print(f"  Vehicle {v + 1}: Depot -> {' -> '.join(map(str, route))} -> Depot | Remaining capacity: {remaining_capacity} | Remaining KM: {remaining_km}")
 
         print(f"\nUnserved services: {self.best_solution.unserved}")
         print(f"Total distance traveled: {self.best_solution.total_distance}")
