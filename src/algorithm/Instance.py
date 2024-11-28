@@ -1,11 +1,14 @@
 from algorithm import Context
-from utils import Random
+from utils import Random, IO, Geo
 import numpy as np
 
 class Instance:
     def __init__(self, context: Context):
         self.random = Random()
+        self.IO = IO()
+        self.Geo = Geo()
         self.context = context
+        self.nodes_df = self.IO.read_csv(self.context.parameters.input_file_path + '/nodes.csv', separator=';', decimal=',', encoding='latin-1')
         self.demands = self.load_demands()
         self.nodes_ids = self.load_nodes_ids()
         self.distances = self.load_distances()
@@ -16,8 +19,7 @@ class Instance:
         """
         Load the demands vector
         """
-        demands = np.random.randint(-200, 200, size=self.context.parameters.n_services)
-        demands = np.append(0, demands)  # Depot demand is 0
+        demands = self.nodes_df['Items'].astype(int).to_numpy()
         return demands
     
 
@@ -25,9 +27,7 @@ class Instance:
         """
         Load the nodes ids vector
         """
-        nodes_ids = []
-        for i in range(self.context.parameters.n_services + 1):
-            nodes_ids.append(i)
+        nodes_ids = self.nodes_df['Id'].astype(int)
         return nodes_ids
     
     
@@ -35,8 +35,17 @@ class Instance:
         """
         Load the distances matrix
         """
-        distances = np.random.randint(5, 100, size=(self.context.parameters.n_services + 1, self.context.parameters.n_services + 1))
-        np.fill_diagonal(distances, 0)  # No self-loop cost
+        # Create empty distances matrix
+        n = len(self.nodes_ids)
+        distances = np.zeros((n, n))
+        
+        # Calculate distances between all pairs of nodes using coordinates
+        for i in range(n):
+            for j in range(n):
+                if i != j:
+                    coord1 = (self.nodes_df.iloc[i]['Latitude'], self.nodes_df.iloc[i]['Longitude'])
+                    coord2 = (self.nodes_df.iloc[j]['Latitude'], self.nodes_df.iloc[j]['Longitude'])
+                    distances[i,j] = self.Geo.calculate_distance(coord1, coord2)
         return distances
     
 
@@ -54,7 +63,11 @@ class Instance:
 
 
     def __str__(self):
-        class_str = f"Total_demand={sum(self.demands)}"
+        positive_demands = [d for d in self.demands if d > 0]
+        negative_demands = [d for d in self.demands if d < 0]
+        class_str = f"\nTotal_positive_demand={sum(positive_demands)}"
+        class_str += f"\nTotal_negative_demand={abs(sum(negative_demands))}"
+        class_str += f"\nDemand_balance={sum(positive_demands) - abs(sum(negative_demands))}"
         class_str += f"\nTotal_nodes={len(self.nodes_ids)}"
         class_str += f"\nTotal_orders={len(self.demands)}"
         return class_str

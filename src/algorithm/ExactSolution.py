@@ -10,7 +10,7 @@ class ExactSolution:
 
     def initialize_solution(self):
         self.routes = [[] for _ in range(self.context.parameters.n_vehicles)]
-        self.unserved = set(range(1, self.context.parameters.n_services + 1))
+        self.unserved = set(self.instance.nodes_ids[1:])
         self.remaining_capacity = [self.context.parameters.VEHICLE_CAPACITY] * self.context.parameters.n_vehicles
         self.remaining_km = [self.context.parameters.MAX_KM] * self.context.parameters.n_vehicles
         self.current_stock = sum(-min(demand, 0) for demand in self.instance.demands)  # Initial stock in depot

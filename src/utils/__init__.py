@@ -7,3 +7,4 @@ from .IO import IO
 from .Folium import Folium
 from .Geo import Geo
 from .StaticRepresentation import StaticRepresentation
+from .Here import Here

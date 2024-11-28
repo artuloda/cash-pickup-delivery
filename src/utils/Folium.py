@@ -4,7 +4,7 @@ import pandas as pd
 import random
 import folium
 import base64
-from folium.plugins import MarkerCluster, Search, MeasureControl, LocateControl, MiniMap, FeatureGroupSubGroup, Fullscreen, AntPath, PolyLineOffset, HeatMap, StripePattern, Geocoder, BeautifyIcon
+from folium.plugins import MarkerCluster, Search, MeasureControl, LocateControl, MiniMap, FeatureGroupSubGroup, Fullscreen, AntPath, PolyLineOffset, HeatMap, StripePattern, Geocoder, BeautifyIcon, MousePosition
 
 
 class Folium:
@@ -71,6 +71,7 @@ class Folium:
         folium.TileLayer('cartodbpositron', name='Carto BD Positron').add_to(map_object)
         MiniMap(tile_layer='openstreetmap', position='bottomleft', toggle_display=True).add_to(map_object)
         MeasureControl(position='bottomleft').add_to(map_object)
+        MousePosition(position='bottomright').add_to(map_object)
         Geocoder(position='topleft', collapsed=True, placeholder="Geocoder Folium").add_to(map_object)
         folium.LayerControl(collapsed=False).add_to(map_object)
         folium.LatLngPopup().add_to(map_object)  # Cuando pinchas te da lat long
@@ -234,9 +235,9 @@ class Folium:
         Returns:
         HTML code
         """
+        # <center>hosted by <span style="font-family: 'system-ui'; font-size: 28px; color:#FE632A">{}</span>""".format('decide') + """</center>
         html = """</tbody></table></center>
-        <center><strong>powered by <span style="font-family: 'Montserrat'; font-size: 30px; color:#e51b1e">{}</span></strong></center>
-        </html>""".format('oga')
+        </html>"""
         return html
     
 
@@ -248,9 +249,7 @@ class Folium:
         HTML code
         """
         html = """</tbody></table></center>
-        <center><img src="data:image/png;base64,{}" alt="{}" style="width: 100%; height: auto;"></center>
-        <center><strong>powered by <span style="font-family: 'Montserrat'; font-size: 30px; color:#e51b1e">{}</span></strong></center>
-        </html>""".format(img_str, plot_name, 'oga')
+        <center><img src="data:image/png;base64,{}" alt="{}" style="width: 100%; height: auto;"></center>"""
         return html
 
 

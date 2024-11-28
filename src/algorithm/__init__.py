@@ -5,3 +5,5 @@ from .Solution import Solution
 from .ExactSolution import ExactSolution
 from .Algorithm import Algorithm
 from .Results import Results
+from .Map import Map
+from .Metrics import Metrics
