@@ -51,7 +51,6 @@ class Here:
             via = via + "&via=" + str(point[0]) + "," + str(point[1])
 
         transport_mode = "&transportMode=" + str(vehicle)
-        # url_query = url + origin + destination + via + "!passThrough=true&return=polyline,summary" + "&apikey=" + here_API_key
         url_query = url + origin + transport_mode + destination + via + "&return=polyline,summary" + "&apikey=" + here_API_key
         data_route_response = self.request_url_HERE(url_query)
 

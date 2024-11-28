@@ -15,6 +15,8 @@ class Metrics:
         self.context.logger.info("Calculating metrics...")
         metrics = []
         for v, route in enumerate(self.solution.routes):
+            if not route:  # Check if the route is empty
+                continue  # Skip to the next vehicle if the route is empty
             total_nodes = len(route)
             remaining_capacity = self.solution.remaining_capacity[v]  # Assuming capacities is a list of used capacities per vehicle
             remaining_km = self.solution.remaining_km[v]  # Assuming remaining_km is a list of used km per vehicle

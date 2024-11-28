@@ -1,7 +1,9 @@
 from algorithm import Instance, Context
+from utils import Random
 
 class Solution:
     def __init__(self, context: Context, instance: Instance):
+        self.random = Random()
         self.context = context
         self.instance = instance
         self.initialize_solution()
@@ -33,7 +35,7 @@ class Solution:
                     break  # No more feasible nodes for this vehicle
 
                 # Select the next node to visit
-                node, distance = self.select_next_node(candidate_nodes)
+                node, distance = self.select_next_node(candidate_nodes, vehicle)
 
                 # Append node to route
                 self.add_node_to_route(vehicle, node, distance)
@@ -91,26 +93,82 @@ class Solution:
         return candidate_nodes
         
 
-    def select_next_node(self, candidate_nodes: list) -> tuple:
+    # def select_next_node2(self, candidate_nodes: list) -> tuple:
+    #     """
+    #     Select the next node to visit: prioritize nodes that minimize storage cost and maximize service completion
+
+    #     Args:
+    #         candidate_nodes (list): Candidate nodes
+    #     Returns:
+    #         tuple: Next node and distance
+    #     """
+    #     def evaluate_candidate(node_distance_tuple):
+    #         node, distance = node_distance_tuple # Node and distance
+    #         stock_after_visit = self.current_stock + self.instance.demands[node] # Stock after visit
+    #         stock_penalty = max(0, stock_after_visit - self.context.parameters.MAX_STOCK) # Stock penalty
+            
+    #         # Additional heuristic factors
+    #         demand_priority = abs(self.instance.demands[node])  # Prioritize larger demands
+    #         proximity_to_others = sum(self.instance.distances[node][other] for other in self.unserved) / len(self.unserved) # Proximity to others
+            
+    #         # Combine factors with weights
+    #         return distance + stock_penalty + (1 / demand_priority) + proximity_to_others
+
+    #     node, distance = min(candidate_nodes, key=evaluate_candidate)
+    #     return node, distance
+    
+
+    def select_next_node(self, candidate_nodes: list, vehicle: int) -> tuple:
         """
         Select the next node to visit: prioritize nodes that minimize storage cost and maximize service completion
 
         Args:
             candidate_nodes (list): Candidate nodes
-            current_stock (int): Current stock
+            vehicle (int): Vehicle index
         Returns:
             tuple: Next node and distance
         """
-        # Improved heuristic: prioritize nodes that minimize storage cost and maximize service completion
-        node, distance = min(
-            candidate_nodes,
-            key=lambda x: (
-                self.instance.demands[x[0]] < 0,  # Prioritize pickups
-                abs(self.instance.demands[x[0]]),  # Prioritize larger demands
-                -x[1],  # Minimize distance
-                self.current_stock + self.instance.demands[x[0]] > self.context.parameters.MAX_STOCK  # Minimize storage cost
+        # Define weights for each factor
+        weight_distance = self.random.get_random_float(0.3, 0.8)
+        weight_stock_penalty = self.random.get_random_float(0.3, 0.8)
+        weight_demand_priority = self.random.get_random_float(0.1, 0.3)
+        weight_proximity = self.random.get_random_float(0.3, 0.8)
+        dynamic_weight_return_to_depot = 0
+
+        #Determine if the vehicle is almost full or almost empty
+        almost_full_vehicle_multiplier = self.random.get_random_float(0.6, 0.8)
+        capacity_threshold = self.context.parameters.VEHICLE_CAPACITY * almost_full_vehicle_multiplier
+        millage_threshold = self.context.parameters.MAX_KM * almost_full_vehicle_multiplier
+        if self.remaining_capacity[vehicle] <= capacity_threshold and self.remaining_km[vehicle] <= millage_threshold:
+            dynamic_weight_return_to_depot = self.random.get_random_float(0.6, 0.8)
+
+        # Normalize the weights
+        total_weight = weight_distance + weight_stock_penalty + weight_demand_priority + weight_proximity + dynamic_weight_return_to_depot
+        weight_distance_normalized = weight_distance / total_weight
+        weight_stock_penalty_normalized = weight_stock_penalty / total_weight
+        weight_demand_priority_normalized = weight_demand_priority / total_weight
+        weight_proximity_normalized = weight_proximity / total_weight
+        dynamic_weight_return_to_depot_normalized = dynamic_weight_return_to_depot / total_weight
+
+        def evaluate_candidate(node_distance_tuple):
+            node, distance = node_distance_tuple  # Node and distance
+            stock_after_visit = self.current_stock + self.instance.demands[node]  # Stock after visit
+            stock_penalty = max(0, stock_after_visit - self.context.parameters.MAX_STOCK)  # Stock penalty
+            
+            # Additional heuristic factors
+            demand_priority = abs(self.instance.demands[node])  # Prioritize larger demands
+            proximity_to_others = sum(self.instance.distances[node][other] for other in self.unserved) / len(self.unserved)  # Proximity to others
+            
+            # Combine factors with weights
+            return (
+                weight_distance_normalized * distance +
+                weight_stock_penalty_normalized * stock_penalty +
+                weight_demand_priority_normalized * (1 / demand_priority) +
+                weight_proximity_normalized * proximity_to_others +
+                dynamic_weight_return_to_depot_normalized * distance
             )
-        )
+
+        node, distance = min(candidate_nodes, key=evaluate_candidate)
         return node, distance
     
 

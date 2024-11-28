@@ -22,6 +22,8 @@ class Results:
         """
         solution_routes = []
         for v, vehicle in enumerate(self.solution.routes):
+            if not vehicle:  # Check if the route is empty
+                continue  # Skip to the next vehicle if the route is empty
             for node in vehicle:
                 node_df = self.instance.nodes_df[self.instance.nodes_df['Id'] == node].iloc[0]
                 route_object = [

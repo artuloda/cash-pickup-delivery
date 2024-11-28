@@ -31,6 +31,7 @@ class Map:
         Draws the Map of the result routes
         """
         self.context.logger.info("Drawing map...")
+        self.draw_depot()
         self.draw_zip_code_polygons()
         self.draw_heat_map()
         self.draw_nodes()
@@ -146,11 +147,11 @@ class Map:
         html = html + self.Folium.add_row_to_HTML_table('Longitud:', node_lon, None, left_col_color_1, right_col_color_1)
         html = html + self.Folium.add_end_HTML_table()
 
-        tooltipFolium = 'Node ID: ' + str(node_id) + ' - ' + str(node_name)
-        popUP = self.Folium.create_pop_up(html)
+        tooltip_folium = 'Node ID: ' + str(node_id) + ' - ' + str(node_name)
+        popup = self.Folium.create_pop_up(html)
         icon_type = 'glyphicon-plus'
         icon = self.Folium.create_icon(icon_type, node_color, 'black')
-        self.Folium.create_marker( [node_lat, node_lon], popUP, tooltipFolium, node_id, icon, clients_layer)
+        self.Folium.create_marker( [node_lat, node_lon], popup, tooltip_folium, node_id, icon, clients_layer)
 
 
     def draw_routes(self):
@@ -165,13 +166,13 @@ class Map:
         for route_df in routes_df_list:
             vehicle_name = route_df['Vehicle'].values[0]
             route_load = route_df['Items'].sum()
-            total_nodes = len(route_df) - 2
-            layer_txt = 'Ruta ' + str(vehicle_name) + ' - Carga: ' + str(route_load) + ' Paradas: ' + str(total_nodes)
+            total_nodes = len(route_df)
+            layer_txt = 'Route ' + str(vehicle_name) + ' - Load: ' + str(route_load) + '€ Stops: ' + str(total_nodes)
             route_layer =  self.Folium.create_feature_group_folium(self.map_object, layer_color, layer_txt, initial_show, dynamic)
             node_color, index_color = self.Folium.get_node_color(index_color, self.colors_high_contrast)
             latitudes = [self.depot_coords[0]]
             longitudes = [self.depot_coords[1]]
-            stops_counter = 0
+            stops_counter = 1
             for index, node_df in route_df.iterrows():
                 node_id = node_df['Id']
                 node_name = node_df['Name']
@@ -195,12 +196,12 @@ class Map:
             longitudes.append(self.depot_coords[1])
             coordinates = self.Geo.create_list_of_list_coordinates(latitudes, longitudes)
             if len(coordinates) > 2:
-                route_info_here = self.Here.calculate_route_HERE(coordinates, 'car', self.context.parameters.here_API_key)
-                route_coordinates_here = route_info_here[0]
-                route_distance = route_info_here[1]
-                route_time = route_info_here[2]
-                print('La ruta:', layer_txt, ' tiene una distancia de ', route_distance, ' y un tiempo de ', route_time)
-                self.Folium.add_route_to_map(route_coordinates_here, node_color, layer_txt, route_layer, 2)
+                # route_info_here = self.Here.calculate_route_HERE(coordinates, 'car', self.context.parameters.here_API_key)
+                # route_coordinates_here = route_info_here[0]
+                # route_distance = route_info_here[1]
+                # route_time = route_info_here[2]
+                # print('Route:', layer_txt, ' has a distance of ', route_distance, ' and a duration of ', route_time)
+                self.Folium.add_route_to_map(coordinates, node_color, layer_txt, route_layer, 2)
 
 
     def add_route_html_node(self, route_layer, node_color, tooltip_folium, node_id, node_name, address, location, province, zip_code, node_type, items, weight, lat, long, stops_counter):
@@ -213,17 +214,17 @@ class Map:
         right_col_color_2 = '#FAF5EF' # Odd row right color
 
         html = self.Folium.add_beggining_HTML_table(node_name)
-        html = html + self.Folium.add_row_to_HTML_table('Identificador Nodo', node_id, None, left_col_color_1, right_col_color_1)
-        html = html + self.Folium.add_row_to_HTML_table('Nombre', node_name, None, left_col_color_2, right_col_color_2)
-        html = html + self.Folium.add_row_to_HTML_table('Dirección', address, None, left_col_color_1, right_col_color_1)
-        html = html + self.Folium.add_row_to_HTML_table('Localidad', location, None, left_col_color_2, right_col_color_2)
-        html = html + self.Folium.add_row_to_HTML_table('Provincia', province, None, left_col_color_1, right_col_color_1)
-        html = html + self.Folium.add_row_to_HTML_table('Código Postal', zip_code, None, left_col_color_2, right_col_color_2)
-        html = html + self.Folium.add_row_to_HTML_table('Tipo Nodo', node_type, None, left_col_color_1, right_col_color_1)
+        html = html + self.Folium.add_row_to_HTML_table('Node Id', node_id, None, left_col_color_1, right_col_color_1)
+        html = html + self.Folium.add_row_to_HTML_table('Name', node_name, None, left_col_color_2, right_col_color_2)
+        html = html + self.Folium.add_row_to_HTML_table('Address', address, None, left_col_color_1, right_col_color_1)
+        html = html + self.Folium.add_row_to_HTML_table('Location', location, None, left_col_color_2, right_col_color_2)
+        html = html + self.Folium.add_row_to_HTML_table('Province', province, None, left_col_color_1, right_col_color_1)
+        html = html + self.Folium.add_row_to_HTML_table('Zip Code', zip_code, None, left_col_color_2, right_col_color_2)
+        html = html + self.Folium.add_row_to_HTML_table('Node Type', node_type, None, left_col_color_1, right_col_color_1)
         html = html + self.Folium.add_row_to_HTML_table('Items', items, None, left_col_color_2, right_col_color_2)
-        html = html + self.Folium.add_row_to_HTML_table('Peso', weight, 'kg.', left_col_color_1, right_col_color_1)
-        html = html + self.Folium.add_row_to_HTML_table('Latitud', lat, None, left_col_color_2, right_col_color_2)
-        html = html + self.Folium.add_row_to_HTML_table('Longitud', long, None, left_col_color_1, right_col_color_1)
+        html = html + self.Folium.add_row_to_HTML_table('Weight', weight, 'kg.', left_col_color_1, right_col_color_1)
+        html = html + self.Folium.add_row_to_HTML_table('Latitude', lat, None, left_col_color_2, right_col_color_2)
+        html = html + self.Folium.add_row_to_HTML_table('Longitude', long, None, left_col_color_1, right_col_color_1)
         html = html + self.Folium.add_end_HTML_table()
 
         location = [lat, long]
@@ -233,46 +234,45 @@ class Map:
         self.Folium.create_marker(location, popup, tooltip_folium, node_name, icon, route_layer)
 
 
-    # def draw_depot(self):
-    #     """
-    #     Draws the depot
-    #     """
-    #     depot_id = self.depot_df['Id']
-    #     depot_name = self.depot_df['Name']
-    #     depot_address = self.depot_df['Address']
-    #     depot_zip_code = self.depot_df['Zip_Code']
-    #     depot_coordinates = [self.depot_df['Latitude'], self.depot_df['Longitude']]
+    def draw_depot(self):
+        """
+        Draws the depot
+        """
+        depot_id = str(self.depot_df['Id'])
+        depot_name = str(self.depot_df['Name'])
+        depot_address = str(self.depot_df['Address'])
+        depot_zip_code = str(self.depot_df['Zip_Code'])
+        depot_coordinates = [self.depot_df['Latitude'], self.depot_df['Longitude']]
 
-    #     # Metrics Data
-    #     total_routes = len(self.metrics_df)
-    #     total_nodes = self.metrics_df['Total Nodes'].sum()
-    #     remaining_capacity = self.metrics_df['Remaining Capacity'].sum()
-    #     available_capacity = self.metrics_df['Available Capacity'].sum()
-    #     remaining_km = self.metrics_df['Remaining KM'].sum()
-    #     available_km = self.metrics_df['Available KM'].sum()
+        # Metrics Data
+        total_routes = len(self.metrics_df)
+        total_nodes = self.metrics_df['Total Nodes'].sum()
+        remaining_capacity = self.metrics_df['Remaining Capacity'].sum()
+        available_capacity = self.metrics_df['Available Capacity'].sum()
+        remaining_km = round(self.metrics_df['Remaining KM'].sum(), 2)
+        available_km = round(self.metrics_df['Available KM'].sum(), 2)
 
-    #     # Create Gantt Chart
-    #     # gantt_data = self.metrics_df[['Route', 'Start Time', 'End Time']]
-    #     # img_str = self.StaticRepresentation.create_gantt_chart(gantt_data)
+        left_col_color_1 = '#36454F' #'#2C3539' # Even row left color
+        right_col_color_1 = '#FBFBF9' # Even row right color
+        left_col_color_2 = '#36454F' # Odd row left color
+        right_col_color_2 = '#FAF5EF' # Odd row right color
+        html = self.Folium.add_beggining_HTML_table(depot_name)
+        html = html + self.Folium.add_row_to_HTML_table('Depot:', depot_id, None, left_col_color_1, right_col_color_1)
+        html = html + self.Folium.add_row_to_HTML_table('Name:', depot_name, None, left_col_color_2, right_col_color_2)
+        html = html + self.Folium.add_row_to_HTML_table('Address:', depot_address, None, left_col_color_1, right_col_color_1)
+        html = html + self.Folium.add_row_to_HTML_table('Zip Code:', depot_zip_code, None, left_col_color_2, right_col_color_2)
+        html = html + self.Folium.add_row_to_HTML_table('Latitude:', depot_coordinates[0], None, left_col_color_1, right_col_color_1)
+        html = html + self.Folium.add_row_to_HTML_table('Longitude:', depot_coordinates[1], None, left_col_color_2, right_col_color_2)
+        html = html + self.Folium.add_row_to_HTML_table('Total Routes:', total_routes, 'rutas', left_col_color_1, right_col_color_1)
+        html = html + self.Folium.add_row_to_HTML_table('Total Nodes:', total_nodes, 'nodos', left_col_color_2, right_col_color_2)
+        html = html + self.Folium.add_row_to_HTML_table('Remaining Capacity:', remaining_capacity, '€', left_col_color_1, right_col_color_1)
+        html = html + self.Folium.add_row_to_HTML_table('Available Capacity:', available_capacity, '€', left_col_color_2, right_col_color_2)
+        html = html + self.Folium.add_row_to_HTML_table('Remaining KM:', remaining_km, 'km', left_col_color_1, right_col_color_1)
+        html = html + self.Folium.add_row_to_HTML_table('Available KM:', available_km, 'km', left_col_color_2, right_col_color_2)
+        html = html + self.Folium.add_end_HTML_table()
 
-    #     left_col_color = '#e51b1e'  # 52595D Iron Gray // #800000    Maroon (W3C) // OGA --> #e51b1e
-    #     right_col_color = '#FBFBF9'  # FBFBF9 Cotton
-    #     html = self.Folium.add_beggining_HTML_table(depot_name)
-    #     html = html + self.Folium.add_row_to_HTML_table('Depot:', depot_id, None, left_col_color, right_col_color)
-    #     html = html + self.Folium.add_row_to_HTML_table('Name:', depot_name, None, left_col_color, right_col_color)
-    #     html = html + self.Folium.add_row_to_HTML_table('Address:', depot_address, None, left_col_color, right_col_color)
-    #     html = html + self.Folium.add_row_to_HTML_table('Zip Code:', depot_zip_code, None, left_col_color, right_col_color)
-    #     html = html + self.Folium.add_row_to_HTML_table('Latitude:', depot_coordinates[0], None, left_col_color, right_col_color)
-    #     html = html + self.Folium.add_row_to_HTML_table('Longitude:', depot_coordinates[1], None, left_col_color, right_col_color)
-    #     html = html + self.Folium.add_row_to_HTML_table('Total Routes:', total_routes, 'rutas', left_col_color, right_col_color)
-    #     html = html + self.Folium.add_row_to_HTML_table('Total Nodes:', total_nodes, 'nodos', left_col_color, right_col_color)
-    #     html = html + self.Folium.add_row_to_HTML_table('Remaining Capacity:', remaining_capacity, '€', left_col_color, right_col_color)
-    #     html = html + self.Folium.add_row_to_HTML_table('Available Capacity:', available_capacity, '€', left_col_color, right_col_color)
-    #     html = html + self.Folium.add_row_to_HTML_table('Remaining KM:', remaining_km, 'km', left_col_color, right_col_color)
-    #     html = html + self.Folium.add_row_to_HTML_table('Available KM:', available_km, 'km', left_col_color, right_col_color)
-    #     html = html + self.Folium.add_end_HTML_table()
-
-    #     tooltipFolium = 'Nodo: ' + str(depot_id) 
-    #     popUP = self.Folium.create_pop_up(html)
-    #     icon = self.Folium.create_icon('glyphicon-home', '#FFFFFF', 'black')
-    #     self.Folium.create_marker(self.depot_coords, popUP, tooltipFolium, depot_id, icon, self.map_object)
+        tooltip_folium = 'Node ID: ' + str(depot_id) + ' - ' + str(depot_name)
+        popup = self.Folium.create_pop_up(html)
+        icon_type = 'glyphicon-home'
+        icon = self.Folium.create_icon(icon_type, '#FFFFFF', 'black')
+        self.Folium.create_marker(depot_coordinates, popup, tooltip_folium, depot_id, icon, self.map_object)
