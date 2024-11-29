@@ -199,7 +199,7 @@ class Folium:
         <html>  
         <head><meta charset="latin-1"></head>
         <center><figure><div class="CompanyLogo" width=80></div></figure></center>
-        <center><h4 style="font-family: 'system-ui'"; font-size: "11px"; "margin-bottom:5">{}</h4>""".format(node_id) + """</center>
+        <center><h4 style="font-family: 'system-ui'"; font-size: "11px"; "margin-bottom:5 width: 305px;">{}</h4>""".format(node_id) + """</center>
         <center> <table style="height: 126px; width: 305px;">
         <tbody>
         """

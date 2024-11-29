@@ -249,8 +249,8 @@ class Map:
         total_nodes = self.metrics_df['Total Nodes'].sum()
         remaining_capacity = self.metrics_df['Remaining Capacity'].sum()
         available_capacity = self.metrics_df['Available Capacity'].sum()
-        remaining_km = round(self.metrics_df['Remaining KM'].sum(), 2)
-        available_km = round(self.metrics_df['Available KM'].sum(), 2)
+        remaining_distance = round(self.metrics_df['Remaining Distance'].sum(), 2)
+        available_distance = round(self.metrics_df['Available Distance'].sum(), 2)
 
         left_col_color_1 = '#36454F' #'#2C3539' # Even row left color
         right_col_color_1 = '#FBFBF9' # Even row right color
@@ -267,8 +267,8 @@ class Map:
         html = html + self.Folium.add_row_to_HTML_table('Total Nodes:', total_nodes, 'nodos', left_col_color_2, right_col_color_2)
         html = html + self.Folium.add_row_to_HTML_table('Remaining Capacity:', remaining_capacity, '€', left_col_color_1, right_col_color_1)
         html = html + self.Folium.add_row_to_HTML_table('Available Capacity:', available_capacity, '€', left_col_color_2, right_col_color_2)
-        html = html + self.Folium.add_row_to_HTML_table('Remaining KM:', remaining_km, 'km', left_col_color_1, right_col_color_1)
-        html = html + self.Folium.add_row_to_HTML_table('Available KM:', available_km, 'km', left_col_color_2, right_col_color_2)
+        html = html + self.Folium.add_row_to_HTML_table('Remaining Distance:', remaining_distance, 'm', left_col_color_1, right_col_color_1)
+        html = html + self.Folium.add_row_to_HTML_table('Available Distance:', available_distance, 'm', left_col_color_2, right_col_color_2)
         html = html + self.Folium.add_end_HTML_table()
 
         tooltip_folium = 'Node ID: ' + str(depot_id) + ' - ' + str(depot_name)

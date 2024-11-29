@@ -8,7 +8,7 @@ class Instance:
         self.IO = IO()
         self.Geo = Geo()
         self.context = context
-        self.nodes_df = self.IO.read_csv(self.context.parameters.input_file_path + '/nodes.csv', separator=';', decimal=',', encoding='latin-1')
+        self.nodes_df = self.IO.read_csv(self.context.parameters.input_file_path + '/nodes3.csv', separator=';', decimal=',', encoding='latin-1')
         self.demands = self.load_demands()
         self.nodes_ids = self.load_nodes_ids()
         self.distances = self.load_distances()
@@ -19,7 +19,7 @@ class Instance:
         """
         Load the demands vector
         """
-        demands = self.nodes_df['Items'].astype(int).to_numpy()
+        demands = self.nodes_df['Items'].astype(int).to_list()
         return demands
     
 
@@ -27,7 +27,7 @@ class Instance:
         """
         Load the nodes ids vector
         """
-        nodes_ids = self.nodes_df['Id'].astype(int)
+        nodes_ids = self.nodes_df['Id'].astype(int).to_list()
         return nodes_ids
     
     
@@ -45,7 +45,7 @@ class Instance:
                 if i != j:
                     coord1 = (self.nodes_df.iloc[i]['Latitude'], self.nodes_df.iloc[i]['Longitude'])
                     coord2 = (self.nodes_df.iloc[j]['Latitude'], self.nodes_df.iloc[j]['Longitude'])
-                    distances[i,j] = self.Geo.calculate_distance(coord1, coord2)
+                    distances[i,j] = int(self.Geo.calculate_distance(coord1, coord2))
         return distances
     
 
@@ -60,6 +60,25 @@ class Instance:
         # Stock validation
         if sum(self.demands) > self.context.parameters.MAX_STOCK:
             raise ValueError(f"Total demand must be less than the maximum stock, {sum(self.demands)} > {self.context.parameters.MAX_STOCK}")
+        
+
+    def calculate_storage_cost(self, current_stock: int) -> int:
+        """
+        # Calculate the storage cost based on the current stock
+        """
+        k1 = 10 # Base storage cost
+        k2 = 100   # Additional cost per unit over max_stock
+        if current_stock <= self.context.parameters.MAX_STOCK:
+            return k1
+        else:
+            return k2 * (current_stock - self.context.parameters.MAX_STOCK)
+        
+
+    def calculate_total_cost(self, total_distance: int) -> int:
+        """
+        Calculate the total cost
+        """
+        return total_distance / 1000 * 0.45
 
 
     def __str__(self):

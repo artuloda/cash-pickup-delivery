@@ -17,8 +17,8 @@ class Geo:
         Returns:
         Distance in meters
         """
-        #return math.ceil(geodesic(coord1, coord2).meters)
-        return geodesic(coord1, coord2).kilometers
+        # return math.ceil(geodesic(coord1, coord2).meters)
+        return int(geodesic(coord1, coord2).meters)
     
 
     def signed_polygon_area(self, vertices: list[tuple[float, float]]) -> float:

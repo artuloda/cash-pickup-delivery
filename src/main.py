@@ -24,6 +24,7 @@ def print_ASCII_logo():
     print(logo_str)
 
 
+
 def execute():
     """
     Executes the algorithm

@@ -17,7 +17,7 @@ class Parameters:
         self.ALGORITHM_OPTION = int(parameters_dict['ALGORITHM_OPTION'])
         self.MAX_STOCK = int(parameters_dict['MAX_STOCK'])
         self.VEHICLE_CAPACITY = int(parameters_dict['VEHICLE_CAPACITY'])
-        self.MAX_KM = int(parameters_dict['MAX_KM'])
+        self.MAX_DISTANCE = int(parameters_dict['MAX_DISTANCE'])
         self.USE_ALL_FLEET = bool(parameters_dict['USE_ALL_FLEET'])
         self.n_services = int(parameters_dict['n_services'])
         self.n_vehicles = int(parameters_dict['n_vehicles'])
@@ -30,7 +30,7 @@ class Parameters:
         Returns:
             int: The execution seed
         """
-        random_seed = 123456789 # random.randint(1, 1000000000)
+        random_seed = 12345678 # random.randint(1, 1000000000)
         random.seed(random_seed)
         np.random.seed(random_seed)
         return random_seed
@@ -47,7 +47,7 @@ class Parameters:
         class_str += 'Instance MAX_TIME: ' + str(self.MAX_TIME) + '\n'
         class_str += 'Instance MAX_STOCK: ' + str(self.MAX_STOCK) + '\n'
         class_str += 'Instance VEHICLE_CAPACITY: ' + str(self.VEHICLE_CAPACITY) + '\n'
-        class_str += 'Instance MAX_KM: ' + str(self.MAX_KM) + '\n'
+        class_str += 'Instance MAX_DISTANCE: ' + str(self.MAX_DISTANCE) + '\n'
         class_str += 'Instance USE_ALL_FLEET: ' + str(self.USE_ALL_FLEET) + '\n'
         class_str += 'Instance n_services: ' + str(self.n_services) + '\n'
         class_str += 'Instance n_vehicles: ' + str(self.n_vehicles) + '\n'

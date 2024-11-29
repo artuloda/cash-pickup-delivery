@@ -13,7 +13,7 @@ class Solution:
         self.routes = [[] for _ in range(self.context.parameters.n_vehicles)]
         self.unserved = set(self.instance.nodes_ids[1:])
         self.remaining_capacity = [self.context.parameters.VEHICLE_CAPACITY] * self.context.parameters.n_vehicles
-        self.remaining_km = [self.context.parameters.MAX_KM] * self.context.parameters.n_vehicles
+        self.remaining_distance = [self.context.parameters.MAX_DISTANCE] * self.context.parameters.n_vehicles
         self.current_stock = sum(-min(demand, 0) for demand in self.instance.demands)  # Initial stock in depot
         self.total_distance = 0
         self.storage_cost = 0
@@ -44,31 +44,12 @@ class Solution:
             # Return to depot
             if self.routes[vehicle]:
                 self.total_distance += self.instance.distances[current_node][0]
-                self.remaining_km[vehicle] -= self.instance.distances[current_node][0]
+                self.remaining_distance[vehicle] -= self.instance.distances[current_node][0]
 
         # Calculate storage stock and total cost
-        self.storage_cost = self.calculate_storage_cost(self.current_stock)
-        self.fitness = self.calculate_total_cost(self.total_distance) + self.storage_cost
+        self.storage_cost = self.instance.calculate_storage_cost(self.current_stock)
+        self.fitness = self.instance.calculate_total_cost(self.total_distance) + self.storage_cost
         # self.print_solution()
-
-    
-    def calculate_storage_cost(self, current_stock: int) -> int:
-        """
-        # Calculate the storage cost based on the current stock
-        """
-        k1 = 10 # Base storage cost
-        k2 = 100   # Additional cost per unit over max_stock
-        if current_stock <= self.context.parameters.MAX_STOCK:
-            return k1
-        else:
-            return k2 * (current_stock - self.context.parameters.MAX_STOCK)
-        
-
-    def calculate_total_cost(self, total_distance: int) -> int:
-        """
-        Calculate the total cost
-        """
-        return total_distance * 0.45
 
 
     def find_feasible_nodes(self, current_node: int, vehicle: int) -> list:
@@ -87,7 +68,7 @@ class Solution:
             (node, self.instance.distances[current_node][node]) for node in self.unserved
             if not (
                 self.remaining_capacity[vehicle] < abs(self.instance.demands[node]) or 
-                self.remaining_km[vehicle] < (self.instance.distances[current_node][node] + self.instance.distances[node][depot_node])
+                self.remaining_distance[vehicle] < (self.instance.distances[current_node][node] + self.instance.distances[node][depot_node])
             )
         ]
         return candidate_nodes
@@ -138,8 +119,8 @@ class Solution:
         #Determine if the vehicle is almost full or almost empty
         almost_full_vehicle_multiplier = self.random.get_random_float(0.6, 0.8)
         capacity_threshold = self.context.parameters.VEHICLE_CAPACITY * almost_full_vehicle_multiplier
-        millage_threshold = self.context.parameters.MAX_KM * almost_full_vehicle_multiplier
-        if self.remaining_capacity[vehicle] <= capacity_threshold and self.remaining_km[vehicle] <= millage_threshold:
+        millage_threshold = self.context.parameters.MAX_DISTANCE * almost_full_vehicle_multiplier
+        if self.remaining_capacity[vehicle] <= capacity_threshold and self.remaining_distance[vehicle] <= millage_threshold:
             dynamic_weight_return_to_depot = self.random.get_random_float(0.6, 0.8)
 
         # Normalize the weights
@@ -183,7 +164,7 @@ class Solution:
         """
         self.routes[vehicle].append(node)
         self.remaining_capacity[vehicle] -= abs(self.instance.demands[node])
-        self.remaining_km[vehicle] -= distance
+        self.remaining_distance[vehicle] -= distance
         self.total_distance += distance
         self.current_stock += self.instance.demands[node]
         self.unserved.remove(node)
@@ -193,7 +174,7 @@ class Solution:
         print(f"Routes: {self.routes}")
         print(f"Unserved: {self.unserved}")
         print(f"Remaining capacity: {self.remaining_capacity}")
-        print(f"Remaining km: {self.remaining_km}")
+        print(f"Remaining distance: {self.remaining_distance}")
         print(f"Total distance: {self.total_distance}")
         print(f"Storage cost: {self.storage_cost}")
         print(f"Fitness: {self.fitness}")

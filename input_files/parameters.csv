@@ -5,12 +5,12 @@ static_map_path;static/map/
 input_file_name;hospitalesEspanaDataSet.csv
 here_API_key;cW7fYkl9rgzC2epupFUTZW1gAk56Y9PUnR_bRq6ltgI
 city_name_zip_code_list;['ALMERIA', 'GRANADA', 'MALAGA', 'CORDOBA', 'HUELVA', 'CADIZ', 'SEVILLA', 'JAEN']
-MAX_ITERATIONS;1000
+MAX_ITERATIONS;1
 MAX_TIME;300
 ALGORITHM_OPTION;1
 MAX_STOCK;15000
 VEHICLE_CAPACITY;3000
-MAX_KM;800
+MAX_DISTANCE;800000
 USE_ALL_FLEET;False
 n_services;100
-n_vehicles;20
+n_vehicles;5

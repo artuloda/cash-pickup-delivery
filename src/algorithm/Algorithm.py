@@ -88,8 +88,8 @@ class Algorithm:
         print("Routes per vehicle:")
         for v, route in enumerate(self.best_solution.routes):
             remaining_capacity = self.best_solution.remaining_capacity[v]  # Assuming capacities is a list of used capacities per vehicle
-            remaining_km = self.best_solution.remaining_km[v]  # Assuming remaining_km is a list of used km per vehicle
-            print(f"  Vehicle {v + 1}: Depot -> {' -> '.join(map(str, route))} -> Depot | Remaining capacity: {remaining_capacity} | Remaining KM: {remaining_km}")
+            remaining_distance = self.best_solution.remaining_distance[v]  # Assuming remaining_distance is a list of used distance per vehicle
+            print(f"  Vehicle {v + 1}: Depot -> {' -> '.join(map(str, route))} -> Depot | Remaining capacity: {remaining_capacity} | Remaining distance: {remaining_distance}")
 
         print(f"\nUnserved services: {self.best_solution.unserved}")
         print(f"Total distance traveled: {self.best_solution.total_distance}")
