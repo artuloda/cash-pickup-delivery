@@ -93,7 +93,6 @@ class Map:
         initial_show = False
         dynamic = False               
         clients_layer = self.Folium.create_feature_group_folium(self.map_object, layer_color, layer_txt, initial_show, dynamic)
-        node_color = '#FE632A'
         for index, row in self.instance.nodes_df.iterrows():
             node_id = row['Id']
             node_name = row['Name']
@@ -107,10 +106,10 @@ class Map:
             node_type = row['Node_Type']
             node_email = row['Email']
             node_phone = row['Phone']
-            self.add_html_pop_up(node_id, node_name, node_address, node_zip_code, node_lat, node_lon, node_demand, node_tw_start, node_tw_end, node_type, node_email, node_phone, node_color, clients_layer)
+            self.add_html_pop_up(node_id, node_name, node_address, node_zip_code, node_lat, node_lon, node_demand, node_tw_start, node_tw_end, node_type, node_email, node_phone, clients_layer)
 
 
-    def add_html_pop_up(self, node_id: int, node_name: str, node_address: str, node_zip_code: str, node_lat: float, node_lon: float, node_demand: float, node_tw_start: str, node_tw_end: str, node_type: str, node_email: str, node_phone: str, node_color: str, clients_layer):
+    def add_html_pop_up(self, node_id: int, node_name: str, node_address: str, node_zip_code: str, node_lat: float, node_lon: float, node_demand: float, node_tw_start: str, node_tw_end: str, node_type: str, node_email: str, node_phone: str, clients_layer):
         """
         Adds the HTML Pop Up for the Client
         Params:
@@ -126,7 +125,6 @@ class Map:
         - node_tw_start: str - Time window start for the Client
         - node_tw_end: str - Time window end for the Client
         - node_type: str - Type of the Client
-        - node_color: str - Color representing the Client
         - clients_layer: FeatureGroup - Layer of the Clients on the map
         """
         left_col_color_1 = '#36454F' #'#2C3539' # Even row left color
@@ -136,7 +134,7 @@ class Map:
         html = self.Folium.add_beggining_HTML_table(node_name)
         html = html + self.Folium.add_row_to_HTML_table('Node Id:', node_id, None, left_col_color_1, right_col_color_1)
         html = html + self.Folium.add_row_to_HTML_table('Name:', node_name, None, left_col_color_2, right_col_color_2)
-        html = html + self.Folium.add_row_to_HTML_table('Demand:', node_demand, 'cubetas', left_col_color_1, right_col_color_1)
+        html = html + self.Folium.add_row_to_HTML_table('Demand:', node_demand, '€', left_col_color_1, right_col_color_1)
         html = html + self.Folium.add_row_to_HTML_table('TW Start:', node_tw_start, None, left_col_color_2, right_col_color_2)
         html = html + self.Folium.add_row_to_HTML_table('Address:', node_address, None, left_col_color_1, right_col_color_1)
         html = html + self.Folium.add_row_to_HTML_table('Zip Code:', node_zip_code, None, left_col_color_2, right_col_color_2)
@@ -149,7 +147,12 @@ class Map:
 
         tooltip_folium = 'Node ID: ' + str(node_id) + ' - ' + str(node_name)
         popup = self.Folium.create_pop_up(html)
-        icon_type = 'glyphicon-plus'
+        if node_demand < 0:
+            icon_type = 'glyphicon-download'
+            node_color = '#FF0000'
+        else:
+            icon_type = 'glyphicon-upload'
+            node_color = '#008000'
         icon = self.Folium.create_icon(icon_type, node_color, 'black')
         self.Folium.create_marker( [node_lat, node_lon], popup, tooltip_folium, node_id, icon, clients_layer)
 
@@ -204,6 +207,7 @@ class Map:
                 # route_distance = route_info_here[1]
                 # route_time = route_info_here[2]
                 # print('Route:', layer_txt, ' has a distance of ', route_distance, ' and a duration of ', route_time)
+                # self.Folium.add_route_to_map(route_coordinates_here, node_color, layer_txt, route_layer, 2)
                 self.Folium.add_route_to_map(coordinates, node_color, layer_txt, route_layer, 2)
 
 
@@ -249,10 +253,12 @@ class Map:
         # Metrics Data
         total_routes = len(self.metrics_df)
         total_nodes = self.metrics_df['Total Nodes'].sum()
-        remaining_capacity = self.metrics_df['Remaining Capacity'].sum()
-        available_capacity = self.metrics_df['Available Capacity'].sum()
-        remaining_distance = round(self.metrics_df['Remaining Distance'].sum(), 2)
-        available_distance = round(self.metrics_df['Available Distance'].sum(), 2)
+        total_picks_ups = self.metrics_df['Total Picks Ups'].sum()
+        total_deliveries = self.metrics_df['Total Deliveries'].sum()
+        current_load = self.metrics_df['Current Load'].sum()
+        available_load = self.metrics_df['Available Load'].sum()
+        current_distance = self.metrics_df['Current Distance'].sum()
+        available_distance = self.metrics_df['Available Distance'].sum()
 
         left_col_color_1 = '#36454F' #'#2C3539' # Even row left color
         right_col_color_1 = '#FBFBF9' # Even row right color
@@ -267,9 +273,11 @@ class Map:
         html = html + self.Folium.add_row_to_HTML_table('Longitude:', depot_coordinates[1], None, left_col_color_2, right_col_color_2)
         html = html + self.Folium.add_row_to_HTML_table('Total Routes:', total_routes, 'rutas', left_col_color_1, right_col_color_1)
         html = html + self.Folium.add_row_to_HTML_table('Total Nodes:', total_nodes, 'nodos', left_col_color_2, right_col_color_2)
-        html = html + self.Folium.add_row_to_HTML_table('Remaining Capacity:', remaining_capacity, '€', left_col_color_1, right_col_color_1)
-        html = html + self.Folium.add_row_to_HTML_table('Available Capacity:', available_capacity, '€', left_col_color_2, right_col_color_2)
-        html = html + self.Folium.add_row_to_HTML_table('Remaining Distance:', remaining_distance, 'm', left_col_color_1, right_col_color_1)
+        html = html + self.Folium.add_row_to_HTML_table('Total Picks Ups:', total_picks_ups, 'nodos', left_col_color_1, right_col_color_1)
+        html = html + self.Folium.add_row_to_HTML_table('Total Deliveries:', total_deliveries, 'nodos', left_col_color_2, right_col_color_2)
+        html = html + self.Folium.add_row_to_HTML_table('Current Load:', current_load, '€', left_col_color_1, right_col_color_1)
+        html = html + self.Folium.add_row_to_HTML_table('Available Load:', available_load, '€', left_col_color_2, right_col_color_2)
+        html = html + self.Folium.add_row_to_HTML_table('Current Distance:', current_distance, 'm', left_col_color_1, right_col_color_1)
         html = html + self.Folium.add_row_to_HTML_table('Available Distance:', available_distance, 'm', left_col_color_2, right_col_color_2)
         html = html + self.Folium.add_end_HTML_table()
 

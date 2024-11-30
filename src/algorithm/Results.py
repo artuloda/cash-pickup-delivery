@@ -9,10 +9,9 @@ class Results:
         self.context = context
         self.instance = instance
         self.solution = solution
-        self.metrics = Metrics(context, instance, solution).calculate_metrics()
         self.routes_df = self.save_solution_routes()
+        self.metrics = Metrics(context, instance, self.routes_df).calculate_metrics()
         self.map = Map(context, instance, solution, self.routes_df, self.metrics)
-
         self.solution_validation()
 
 

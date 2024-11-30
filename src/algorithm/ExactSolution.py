@@ -9,9 +9,10 @@ class ExactSolution:
     def initialize_solution(self):
         self.routes = [[] for _ in range(self.context.parameters.n_vehicles)]
         self.unserved = set(self.instance.nodes_ids[1:])
-        self.remaining_capacity = [self.context.parameters.VEHICLE_CAPACITY] * self.context.parameters.n_vehicles
-        self.remaining_distance = [self.context.parameters.MAX_DISTANCE] * self.context.parameters.n_vehicles
-        self.current_stock = sum(-min(demand, 0) for demand in self.instance.demands)
+        self.current_capacity = [0] * self.context.parameters.n_vehicles
+        self.current_distance = [0] * self.context.parameters.n_vehicles
+        self.vehicles_initial_load = [0] * self.context.parameters.n_vehicles
+        self.current_stock = self.context.parameters.MAX_STOCK * 0.8
         self.total_distance = 0
         self.storage_cost = 0
         self.fitness = 0
