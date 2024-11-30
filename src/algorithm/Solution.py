@@ -90,6 +90,11 @@ class Solution:
         Returns:
             tuple: Next node and distance
         """
+
+        if len(self.routes[vehicle]) == 0:
+            node, distance = self.random.get_random_choice(candidate_nodes)
+            return node, distance
+        
         # Define weights for each factor
         weight_distance = self.random.get_random_float(0.3, 0.8)
         weight_stock_penalty = self.random.get_random_float(0.3, 0.5)

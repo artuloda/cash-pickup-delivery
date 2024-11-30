@@ -6,6 +6,7 @@ class ExactSolution:
         self.instance = instance
         self.initialize_solution()
 
+
     def initialize_solution(self):
         self.routes = [[] for _ in range(self.context.parameters.n_vehicles)]
         self.unserved = set(self.instance.nodes_ids[1:])
@@ -17,111 +18,134 @@ class ExactSolution:
         self.storage_cost = 0
         self.fitness = 0
 
+
     def solve(self):
-        nodes = self.instance.nodes_ids
+        # Include the depot
+        nodes = self.instance.nodes_df['Id'].astype(int).to_list()
+        # Exclude the depot's row and column from the distance matrix
         distances = self.instance.distances
-        demands = self.instance.demands
-        k1 = 10  # Base storage cost
-        k2 = 100  # Additional cost per unit over MAX_STOCK
+        demands = self.instance.nodes_df['Items'].astype(int).to_list()
+        depot = 0
+        n_vehicles = self.context.parameters.n_vehicles
+        max_distance = self.context.parameters.MAX_DISTANCE
+        vehicle_capacity = self.context.parameters.VEHICLE_CAPACITY
+        max_stock = self.context.parameters.MAX_STOCK
+        k1 = 10
+        k2 = 100
+        penalty_unperformed = 1000
+        n_nodes = len(nodes)
+
+
+        # Create the problem
+        problem = LpProblem("CVRP_with_stock", LpMinimize)
 
         # Decision variables
-        problem = LpProblem("CashPickupDelivery", LpMinimize)
-        
-        # Correct initialization of x with all necessary keys
-        x = LpVariable.dicts("x", 
-                            ((nodes[i], nodes[j], k) for i in range(len(nodes))
-                                                   for j in range(len(nodes))
-                                                   for k in range(self.context.parameters.n_vehicles)),
-                            cat=LpBinary)
-        
-        u = LpVariable.dicts("u", (i for i in range(1, len(nodes))), lowBound=1)  # u[i] = position of node i in the route
+        x = LpVariable.dicts("x", ((i, j, k) for i in range(n_nodes)
+                                            for j in range(n_nodes)
+                                            for k in range(n_vehicles)),
+                            cat=LpBinary)  # Binary decision: whether vehicle k travels from i to j
+        u = LpVariable.dicts("u", (i for i in range(1, n_nodes)), lowBound=0, upBound=vehicle_capacity, cat=LpContinuous)
+        stock = LpVariable("stock", lowBound=0, cat=LpContinuous)  # Remaining stock
 
-        # Objective function: Minimize unperformed services, total distance, and storage cost
+        # Objective function: Minimize total distance
         problem += lpSum(distances[i][j] * x[i, j, k]
-                        for i in range(len(nodes))
-                        for j in range(len(nodes))
-                        for k in range(self.context.parameters.n_vehicles))# \
-                # + k2 * max(0, self.current_stock - self.context.parameters.MAX_STOCK) \
-                # + k1 * len(self.unserved)  # Penalize unperformed services
+                        for i in range(n_nodes) for j in range(n_nodes) for k in range(n_vehicles))
 
-        # Add constraints for each vehicle
-        for k in range(self.context.parameters.n_vehicles):
-            # Distance and capacity constraints
-            problem += lpSum(distances[i][j] * x[i, j, k] for i in range(len(nodes)) for j in range(len(nodes))) <= self.context.parameters.MAX_DISTANCE
-            problem += lpSum(demands[j] * x[i, j, k] for i in range(len(nodes)) for j in range(1, len(nodes))) <= self.context.parameters.VEHICLE_CAPACITY
+        # Constraints
 
-            # Ensure each vehicle starts and ends at the depot
-            problem += lpSum(x[0, j, k] for j in range(1, len(nodes))) == 1
-            problem += lpSum(x[j, 0, k] for j in range(1, len(nodes))) == 1
+        # Ensure each node is visited exactly once (except the depot)
+        for j in range(1, n_nodes):
+            problem += lpSum(x[i, j, k] for i in range(n_nodes) for k in range(n_vehicles)) == 1
 
-        # Ensure each customer is visited exactly once
-        for j in range(1, len(nodes)):
-            problem += lpSum(x[i, j, k] for i in range(len(nodes)) for k in range(self.context.parameters.n_vehicles)) == 1
+        # Flow conservation for each vehicle
+        for k in range(n_vehicles):
+            for i in range(n_nodes):
+                problem += lpSum(x[i, j, k] for j in range(n_nodes)) == lpSum(x[j, i, k] for j in range(n_nodes))
 
-        # Flow conservation constraints
-        for k in range(self.context.parameters.n_vehicles):
-            for i in range(len(nodes)):
-                problem += lpSum(x[i, j, k] for j in range(len(nodes))) == lpSum(x[j, i, k] for j in range(len(nodes)))
+        # Vehicles start and end at the depot
+        for k in range(n_vehicles):
+            problem += lpSum(x[0, j, k] for j in range(1, n_nodes)) == 1
+            problem += lpSum(x[j, 0, k] for j in range(1, n_nodes)) == 1
 
-        # Subtour elimination constraints
-        for i in range(1, len(nodes)):
-            for j in range(1, len(nodes)):
-                if i != j:
-                    for k in range(self.context.parameters.n_vehicles):
-                        problem += u[i] - u[j] + self.context.parameters.VEHICLE_CAPACITY * x[i, j, k] <= self.context.parameters.VEHICLE_CAPACITY - demands[j]
+        # Vehicle capacity constraint
+        for k in range(n_vehicles):
+            for i in range(1, n_nodes):
+                for j in range(1, n_nodes):
+                    if i != j:
+                        problem += u[j] >= u[i] + demands[j] * x[i, j, k] - vehicle_capacity * (1 - x[i, j, k])
 
-        # Solve the optimization problem
+        # Ensure the stock is properly handled for deliveries (negative demands)
+        for k in range(n_vehicles):
+            for i in range(1, n_nodes):
+                for j in range(1, n_nodes):
+                    if demands[j] < 0:  # Delivery point
+                        problem += stock >= -demands[j] * x[i, j, k]
+
+        # Total distance constraint for each vehicle
+        for k in range(n_vehicles):
+            problem += lpSum(distances[i][j] * x[i, j, k] for i in range(n_nodes) for j in range(n_nodes)) <= max_distance
+
+        # Solve the problem
         problem.solve()
 
-        # Check the solution status
+        # Check solution status
         if problem.status != 1:
             print("Problem not solved successfully. Status:", problem.status)
+            return None
+        
 
-        # Extract routes from the solution
-        for k in range(self.context.parameters.n_vehicles):
-            for i in range(len(nodes)):
-                for j in range(len(nodes)):
+        routes = [[] for _ in range(n_vehicles)]
+        for k in range(n_vehicles):
+            for i in range(n_nodes):
+                for j in range(n_nodes):
                     if x[i, j, k].varValue > 0.5:
-                        self.routes[k].append(nodes[j])
-                        print(f"Route {k}: {self.routes[k]}")
+                        routes[k].append((i, j))
+        total_distance = sum(distances[i][j] * x[i, j, k].varValue for i in range(n_nodes)
+                            for j in range(n_nodes) for k in range(n_vehicles))
+        print(f"Routes: {routes}")
+        print(f"Total Distance: {total_distance}")
+        print(f"Remaining Stock: {stock.varValue}")
+
+        self.current_stock = stock.varValue
+
+        # Corrected logic to construct final_routes
+        self.routes = []
+        for route in routes:
+            vehicle_route = []
+            for i, j in route:
+                vehicle_route.append(nodes[i])
+            vehicle_route.append(nodes[0])  # Ensure the route returns to the depot
+            self.routes.append(vehicle_route)
 
         # Determine unserved nodes
         served_nodes = {node for route in self.routes for node in route}
-        self.unserved = set(nodes) - served_nodes - {0}
+        self.unserved = set(nodes[1:]) - served_nodes
 
-        # Calculate remaining capacity and distance for each vehicle
-        self.remaining_capacity = [
-            self.context.parameters.VEHICLE_CAPACITY - sum(
-                demands[i] * (x[i, j, k].varValue or 0) for i in range(1, len(nodes)) for j in range(1, len(nodes))
-            )
-            for k in range(self.context.parameters.n_vehicles)
+        # Calculate metrics
+        self.current_capacity = [
+            vehicle_capacity - sum(demands[nodes.index(j)] for j in route if j != nodes[0])
+            for route in self.routes
         ]
-
-        self.remaining_distance = [
-            self.context.parameters.MAX_DISTANCE - sum(
-                distances[i][j] * (x[i, j, k].varValue or 0) for i in range(1, len(nodes)) for j in range(1, len(nodes))
-            )
-            for k in range(self.context.parameters.n_vehicles)
+        self.current_distance = [
+            max_distance - sum(distances[nodes.index(route[i])][nodes.index(route[i + 1])] for i in range(len(route) - 1))
+            for route in self.routes
         ]
-
-        # Calculate total distance traveled
         self.total_distance = sum(
-            distances[i][j] * (x[i, j, k].varValue or 0)
-            for i in range(1, len(nodes)) for j in range(1, len(nodes)) for k in range(self.context.parameters.n_vehicles)
+            distances[nodes.index(route[i])][nodes.index(route[i + 1])]
+            for route in self.routes for i in range(len(route) - 1)
         )
+        self.storage_cost = self.instance.calculate_storage_cost(self.current_stock)
+        self.fitness = self.total_distance + penalty_unperformed * len(self.unserved) + self.storage_cost
 
-        # Calculate storage cost and overall fitness
-        self.storage_cost = sum(self.instance.calculate_storage_cost(demand) for demand in demands[1:])
-        self.fitness = self.instance.calculate_total_cost(self.total_distance) + self.storage_cost
-
-        # Print the solution
         self.print_solution()
+
+
 
     def print_solution(self):
         print(f"Routes: {self.routes}")
         print(f"Unserved: {self.unserved}")
-        print(f"Remaining capacity: {self.remaining_capacity}")
-        print(f"Remaining distance: {self.remaining_distance}")
+        print(f"Current capacity: {self.current_capacity}")
+        print(f"Current distance: {self.current_distance}")
         print(f"Total distance: {self.total_distance}")
         print(f"Storage cost: {self.storage_cost}")
         print(f"Total cost: {self.fitness}")

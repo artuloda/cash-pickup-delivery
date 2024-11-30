@@ -19,7 +19,7 @@ class Metrics:
         routes_by_vehicle_df_list = self.IO.cluster_dataframe_by_condition(self.routes_df, 'Vehicle')
         for route_by_vehicle_df in routes_by_vehicle_df_list:
             vehicle_id = route_by_vehicle_df['Vehicle'].values[0]
-            total_nodes = len(route_by_vehicle_df)
+            total_nodes = len(route_by_vehicle_df) - 2
             total_picks_ups = sum(1 for _, row in route_by_vehicle_df.iterrows() if row['Type'] == 'Pick_Up')
             total_deliveries = sum(1 for _, row in route_by_vehicle_df.iterrows() if row['Type'] == 'Delivery')
             current_capacity = route_by_vehicle_df['Load'].iloc[-1]

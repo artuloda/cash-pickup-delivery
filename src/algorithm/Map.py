@@ -35,6 +35,7 @@ class Map:
         self.draw_zip_code_polygons()
         self.draw_heat_map()
         self.draw_nodes()
+        self.draw_unserved_nodes()
         self.draw_routes()
 
         fileName = self.context.output_folder + 'result_map'
@@ -89,7 +90,7 @@ class Map:
         Draws the Nodes into the Folium Map
         """
         layer_color = '#00008B'
-        layer_txt = 'Clients'
+        layer_txt = 'Nodes'
         initial_show = False
         dynamic = False               
         clients_layer = self.Folium.create_feature_group_folium(self.map_object, layer_color, layer_txt, initial_show, dynamic)
@@ -157,6 +158,34 @@ class Map:
         self.Folium.create_marker( [node_lat, node_lon], popup, tooltip_folium, node_id, icon, clients_layer)
 
 
+    def draw_unserved_nodes(self):
+        """
+        Draws the Unserved Nodes into the Folium Map
+        """
+        unserved_nodes = list(self.solution.unserved)
+        unserved_nodes_df = self.instance.nodes_df.loc[self.instance.nodes_df['Id'].isin(unserved_nodes)]
+        if len(unserved_nodes_df) > 0:
+            layer_color = '#00008B'
+            layer_txt = 'Unserved Nodes'
+            initial_show = False
+            dynamic = False               
+            clients_layer = self.Folium.create_feature_group_folium(self.map_object, layer_color, layer_txt, initial_show, dynamic)
+            for index, row in unserved_nodes_df.iterrows():
+                node_id = row['Id']
+                node_name = row['Name']
+                node_address = row['Address']
+                node_zip_code = row['Zip_Code']
+                node_lat = row['Latitude']
+                node_lon = row['Longitude']
+                node_demand = row['Items']
+                node_tw_start = row['TW_Start']
+                node_tw_end = row['TW_End']
+                node_type = row['Node_Type']
+                node_email = row['Email']
+                node_phone = row['Phone']
+                self.add_html_pop_up(node_id, node_name, node_address, node_zip_code, node_lat, node_lon, node_demand, node_tw_start, node_tw_end, node_type, node_email, node_phone, clients_layer)
+
+
     def draw_routes(self):
         """
         Draws the Routes into the Folium Map
@@ -202,13 +231,13 @@ class Map:
             longitudes.append(self.depot_coords[1])
             coordinates = self.Geo.create_list_of_list_coordinates(latitudes, longitudes)
             if len(coordinates) > 2:
-                # route_info_here = self.Here.calculate_route_HERE(coordinates, 'car', self.context.parameters.here_API_key)
-                # route_coordinates_here = route_info_here[0]
-                # route_distance = route_info_here[1]
-                # route_time = route_info_here[2]
-                # print('Route:', layer_txt, ' has a distance of ', route_distance, ' and a duration of ', route_time)
-                # self.Folium.add_route_to_map(route_coordinates_here, node_color, layer_txt, route_layer, 2)
-                self.Folium.add_route_to_map(coordinates, node_color, layer_txt, route_layer, 2)
+                route_info_here = self.Here.calculate_route_HERE(coordinates, 'car', self.context.parameters.here_API_key)
+                route_coordinates_here = route_info_here[0]
+                route_distance = route_info_here[1]
+                route_time = route_info_here[2]
+                print('Route:', layer_txt, ' has a distance of ', route_distance, ' and a duration of ', route_time)
+                self.Folium.add_route_to_map(route_coordinates_here, node_color, layer_txt, route_layer, 2)
+                # self.Folium.add_route_to_map(coordinates, node_color, layer_txt, route_layer, 2)
 
 
     def add_route_html_node(self, route_layer, node_color, tooltip_folium, node_id, node_name, address, location, province, zip_code, node_type, items, lat, long, stops_counter):
@@ -229,8 +258,8 @@ class Map:
         html = html + self.Folium.add_row_to_HTML_table('Zip Code', zip_code, None, left_col_color_2, right_col_color_2)
         html = html + self.Folium.add_row_to_HTML_table('Node Type', node_type, None, left_col_color_1, right_col_color_1)
         html = html + self.Folium.add_row_to_HTML_table('Items', items, None, left_col_color_2, right_col_color_2)
-        html = html + self.Folium.add_row_to_HTML_table('Latitude', lat, None, left_col_color_2, right_col_color_2)
-        html = html + self.Folium.add_row_to_HTML_table('Longitude', long, None, left_col_color_1, right_col_color_1)
+        html = html + self.Folium.add_row_to_HTML_table('Latitude', lat, None, left_col_color_1, right_col_color_1)
+        html = html + self.Folium.add_row_to_HTML_table('Longitude', long, None, left_col_color_2, right_col_color_2)
         html = html + self.Folium.add_end_HTML_table()
 
         location = [lat, long]
