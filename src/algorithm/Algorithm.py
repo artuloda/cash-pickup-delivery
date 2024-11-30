@@ -62,7 +62,7 @@ class Algorithm:
             # Update best solution
             if solution.fitness < self.best_fitness:
                 self.set_best_solution(solution)
-            self.context.logger.info(f"Iteration {iteration} - Solution fitness: {solution.fitness}, Time: {time.time() - start_time_iteration:.2f}s")
+            self.context.logger.info(f"Iteration {iteration} - Solution fitness: {solution.fitness}, Time: {time.time() - start_time_iteration:.4f}s")
             iteration += 1
         self.context.logger.info(f"Solution fitness: {self.best_solution.fitness}, Total time: {time.time() - start_time:.2f}s")
 

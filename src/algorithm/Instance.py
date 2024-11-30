@@ -62,6 +62,16 @@ class Instance:
         if sum(self.demands) > self.context.parameters.MAX_STOCK:
             raise ValueError(f"Total demand must be less than the maximum stock, {sum(self.demands)} > {self.context.parameters.MAX_STOCK}")
         
+    
+    def get_solution_value(self, total_distance: int, current_stock: int, unserved: int) -> int:
+        """
+        Get the solution value
+        """
+        transport_cost = total_distance / 1000 * 0.45 # 0.45€/km
+        storage_cost = self.calculate_storage_cost(current_stock) # 10€/storage
+        penalty_cost = unserved * 100 # 100€/undelivered order
+        return transport_cost + storage_cost + penalty_cost
+        
 
     def calculate_storage_cost(self, current_stock: int) -> int:
         """

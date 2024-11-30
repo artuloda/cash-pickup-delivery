@@ -48,7 +48,7 @@ class Solution:
 
         # Calculate storage stock and total cost
         self.storage_cost = self.instance.calculate_storage_cost(self.current_stock)
-        self.fitness = self.instance.calculate_total_cost(self.total_distance)
+        self.fitness = self.instance.get_solution_value(self.total_distance, self.current_stock, len(self.unserved))
         # self.print_solution()
 
 
@@ -94,7 +94,7 @@ class Solution:
         if len(self.routes[vehicle]) == 0:
             node, distance = self.random.get_random_choice(candidate_nodes)
             return node, distance
-        
+
         # Define weights for each factor
         weight_distance = self.random.get_random_float(0.3, 0.8)
         weight_stock_penalty = self.random.get_random_float(0.3, 0.5)

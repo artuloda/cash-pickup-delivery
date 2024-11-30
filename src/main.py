@@ -33,20 +33,26 @@ def execute():
 
     # Problem Context
     context = Context()
+    context.logger.info("Starting execution with the following parameters:")
     context.logger.info(context.parameters)
 
     # Instance
     instance = Instance(context)
+    context.logger.info("Instance created with the following details:")
     context.logger.info(instance)
 
     # Algorithm
     algorithm = Algorithm(context, instance)
+    context.logger.info("Algorithm initialized. Starting execution...")
     algorithm.print_results()
 
     # Results
     Results(context, instance, algorithm.best_solution)
+    context.logger.info("Results have been processed and stored.")
 
-    context.logger.info(f"Time taken: {time.time() - start_time} s.")
+    elapsed_time = time.time() - start_time
+    context.logger.info(f"Time taken: {elapsed_time} s.")
+    print(f"Execution completed in {elapsed_time:.2f} seconds.")
     
 
 if __name__ == '__main__':

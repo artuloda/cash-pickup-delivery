@@ -96,6 +96,8 @@ class Map:
         clients_layer = self.Folium.create_feature_group_folium(self.map_object, layer_color, layer_txt, initial_show, dynamic)
         for index, row in self.instance.nodes_df.iterrows():
             node_id = row['Id']
+            if node_id == 0:
+                continue
             node_name = row['Name']
             node_address = row['Address']
             node_zip_code = row['Zip_Code']
@@ -231,13 +233,13 @@ class Map:
             longitudes.append(self.depot_coords[1])
             coordinates = self.Geo.create_list_of_list_coordinates(latitudes, longitudes)
             if len(coordinates) > 2:
-                route_info_here = self.Here.calculate_route_HERE(coordinates, 'car', self.context.parameters.here_API_key)
-                route_coordinates_here = route_info_here[0]
-                route_distance = route_info_here[1]
-                route_time = route_info_here[2]
-                print('Route:', layer_txt, ' has a distance of ', route_distance, ' and a duration of ', route_time)
-                self.Folium.add_route_to_map(route_coordinates_here, node_color, layer_txt, route_layer, 2)
-                # self.Folium.add_route_to_map(coordinates, node_color, layer_txt, route_layer, 2)
+                # route_info_here = self.Here.calculate_route_HERE(coordinates, 'car', self.context.parameters.here_API_key)
+                # route_coordinates_here = route_info_here[0]
+                # route_distance = route_info_here[1]
+                # route_time = route_info_here[2]
+                # print('Route:', layer_txt, ' has a distance of ', route_distance, ' and a duration of ', route_time)
+                # self.Folium.add_route_to_map(route_coordinates_here, node_color, layer_txt, route_layer, 2)
+                self.Folium.add_route_to_map(coordinates, node_color, layer_txt, route_layer, 2)
 
 
     def add_route_html_node(self, route_layer, node_color, tooltip_folium, node_id, node_name, address, location, province, zip_code, node_type, items, lat, long, stops_counter):
