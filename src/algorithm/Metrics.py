@@ -18,11 +18,11 @@ class Metrics:
             if not route:  # Check if the route is empty
                 continue  # Skip to the next vehicle if the route is empty
             total_nodes = len(route)
-            remaining_capacity = self.solution.remaining_capacity[v]  # Assuming capacities is a list of used capacities per vehicle
-            remaining_distance = self.solution.remaining_distance[v]  # Assuming remaining_distance is a list of used distance per vehicle
-            available_distance = self.context.parameters.MAX_DISTANCE - remaining_distance
-            available_capacity = self.context.parameters.VEHICLE_CAPACITY - remaining_capacity
-            metric_object = [v+1, total_nodes, remaining_capacity, available_capacity, remaining_distance, available_distance]
+            current_capacity = self.solution.current_capacity[v]  # Assuming capacities is a list of used capacities per vehicle
+            current_distance = self.solution.current_distance[v]  # Assuming remaining_distance is a list of used distance per vehicle
+            available_distance = self.context.parameters.MAX_DISTANCE - current_distance
+            available_capacity = self.context.parameters.VEHICLE_CAPACITY - current_capacity
+            metric_object = [v+1, total_nodes, current_capacity, available_capacity, current_distance, available_distance]
             metrics.append(metric_object)
         columns_name =['Vehicle', 'Total Nodes', 'Remaining Capacity', 'Available Capacity', 'Remaining Distance', 'Available Distance']
         metrics = self.IO.create_dataframe(metrics, columns_name)
