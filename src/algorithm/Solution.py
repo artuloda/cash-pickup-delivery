@@ -63,7 +63,7 @@ class Solution:
                         self.current_distance[vehicle] += distance + self.instance.distances[node][0]
                         self.routes[vehicle].append(node)
                         self.total_distance += distance
-                        self.current_stock -= demand
+                        self.current_stock -= abs(demand)
                         self.unserved.remove(node)
                         previous_node = node
                 # If the distance is too long, skip this node
@@ -78,7 +78,7 @@ class Solution:
 
         # Calculate storage stock and total cost
         self.storage_cost = self.instance.calculate_storage_cost(self.current_stock)
-        self.fitness = self.instance.calculate_total_cost(self.total_distance) + self.storage_cost
+        self.fitness = self.instance.calculate_total_cost(self.total_distance)
         # self.print_solution()
 
 
@@ -95,13 +95,11 @@ class Solution:
         candidate_nodes = []
         depot_node = 0  # Assuming the depot is node 0
         for node in self.unserved:
-            # Distance to node
             distance = self.instance.distances[previous_node][node]
-            # Check distance constraint
+            # Check distance and capacity constraints
             if self.current_distance[vehicle] + distance + self.instance.distances[node][depot_node] <= self.context.parameters.MAX_DISTANCE and \
                 self.current_capacity[vehicle] + self.instance.demands[node] <= self.context.parameters.VEHICLE_CAPACITY: 
                 candidate_nodes.append((node, distance))
-
         return candidate_nodes
         
 
@@ -117,12 +115,10 @@ class Solution:
         """
         # Define weights for each factor
         weight_distance = self.random.get_random_float(0.3, 0.8)
-        weight_stock_penalty = self.random.get_random_float(0.3, 0.6)
-        weight_demand_priority = self.random.get_random_float(0.1, 0.3)
-        weight_proximity = self.random.get_random_float(0.3, 0.8)
+        weight_stock_penalty = self.random.get_random_float(0.3, 0.5)
         dynamic_weight_return_to_depot = 0
 
-        #Determine if the vehicle is almost full or almost empty
+        # Determine if the vehicle is almost full or almost empty
         almost_full_vehicle_multiplier = self.random.get_random_float(0.6, 0.8)
         capacity_threshold = self.context.parameters.VEHICLE_CAPACITY * almost_full_vehicle_multiplier
         millage_threshold = self.context.parameters.MAX_DISTANCE * almost_full_vehicle_multiplier
@@ -130,11 +126,9 @@ class Solution:
             dynamic_weight_return_to_depot = self.random.get_random_float(0.6, 0.8)
 
         # Normalize the weights
-        total_weight = weight_distance + weight_stock_penalty + weight_demand_priority + weight_proximity + dynamic_weight_return_to_depot
+        total_weight = weight_distance + weight_stock_penalty + dynamic_weight_return_to_depot
         weight_distance_normalized = weight_distance / total_weight
         weight_stock_penalty_normalized = weight_stock_penalty / total_weight
-        weight_demand_priority_normalized = weight_demand_priority / total_weight
-        weight_proximity_normalized = weight_proximity / total_weight
         dynamic_weight_return_to_depot_normalized = dynamic_weight_return_to_depot / total_weight
 
         def evaluate_candidate(node_distance_tuple):
@@ -142,33 +136,33 @@ class Solution:
             stock_after_visit = self.current_stock + self.instance.demands[node]  # Stock after visit
             stock_penalty = max(0, stock_after_visit - self.context.parameters.MAX_STOCK)  # Stock penalty
             
-            # Additional heuristic factors
-            demand_priority = abs(self.instance.demands[node])  # Prioritize larger demands
-            proximity_to_others = sum(self.instance.distances[node][other] for other in self.unserved) / len(self.unserved)  # Proximity to others
-            
             # Combine factors with weights
             return (
                 weight_distance_normalized * distance +
                 weight_stock_penalty_normalized * stock_penalty +
-                weight_demand_priority_normalized * (1 / demand_priority) +
-                weight_proximity_normalized * proximity_to_others +
                 dynamic_weight_return_to_depot_normalized * distance
             )
 
         node, distance = min(candidate_nodes, key=evaluate_candidate)
-        # node, distance = min(candidate_nodes, key=lambda x: x[1])
         return node, distance
     
 
     def print_solution(self):
-        print(f"Routes: {self.routes}")
-        print(f"Unserved: {self.unserved}")
-        print(f"Current capacity: {self.current_capacity}")
-        print(f"Current distance: {self.current_distance}")
+
+        print("Routes per vehicle:")
+        for v, route in enumerate(self.routes):
+            current_capacity = self.current_capacity[v]  # Assuming capacities is a list of used capacities per vehicle
+            current_distance = self.current_distance[v]  # Assuming remaining_distance is a list of used distance per vehicle
+            print(f"  Vehicle {v + 1}: Depot -> {' -> '.join(map(str, route))} -> Depot | Current capacity: {current_capacity} | Current distance: {current_distance / 1000:.2f} km")
+
+        print(f"Total routes: {len(self.routes)}")
         print(f"Total distance: {self.total_distance}")
         print(f"Storage cost: {self.storage_cost}")
         print(f"Fitness: {self.fitness}")
         print(f"Current stock: {self.current_stock}")
+        print(f"Unserved: {self.unserved}")
+        print(f"Current capacity: {self.current_capacity}")
+        print(f"Current distance: {self.current_distance}")
         print("-----------------------------------------------------------------------------------")
     
 

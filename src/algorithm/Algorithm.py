@@ -76,23 +76,7 @@ class Algorithm:
 
     def print_results(self):
         """
-        Print the solution
-
-        Args:
-            routes (list): Routes per vehicle
-            total_distance (int): Total distance traveled
-            storage_cost (int): Depot storage cost
-            fitness (int): Total cost
-            unserved (set): Unserved services
+        Print the best solution
         """
-        print("Routes per vehicle:")
-        for v, route in enumerate(self.best_solution.routes):
-            current_capacity = self.best_solution.current_capacity[v]  # Assuming capacities is a list of used capacities per vehicle
-            current_distance = self.best_solution.current_distance[v]  # Assuming remaining_distance is a list of used distance per vehicle
-            print(f"  Vehicle {v + 1}: Depot -> {' -> '.join(map(str, route))} -> Depot | Current capacity: {current_capacity} | Current distance: {current_distance / 1000:.2f} km")
-
-        print(f"\nUnserved services: {self.best_solution.unserved}")
-        print(f"Total distance traveled: {self.best_solution.total_distance}")
-        print(f"Depot storage cost: {self.best_solution.storage_cost}")
-        print(f"Total cost: {round(self.best_solution.fitness, 2)} €")
+        self.best_solution.print_solution()
 
