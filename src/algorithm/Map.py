@@ -166,7 +166,7 @@ class Map:
         for route_df in routes_df_list:
             vehicle_name = route_df['Vehicle'].values[0]
             route_load = route_df['Items'].sum()
-            total_nodes = len(route_df)
+            total_nodes = len(route_df) - 2
             layer_txt = 'Route ' + str(vehicle_name) + ' - Load: ' + str(route_load) + '€ Stops: ' + str(total_nodes)
             route_layer =  self.Folium.create_feature_group_folium(self.map_object, layer_color, layer_txt, initial_show, dynamic)
             node_color, index_color = self.Folium.get_node_color(index_color, self.colors_high_contrast)
@@ -176,20 +176,23 @@ class Map:
             for index, node_df in route_df.iterrows():
                 node_id = node_df['Id']
                 node_name = node_df['Name']
+                order_type = node_df['Type']
                 address = node_df['Address']
                 location = node_df['Location']
                 province = node_df['Province']
                 zip_code = node_df['Zip_Code']
                 node_type = node_df['Node_Type']
                 items = node_df['Items']
-                weight = node_df['Weight']
                 lat = node_df['Latitude']
                 long = node_df['Longitude']
+
+                if order_type == '-':
+                    continue
 
                 latitudes.append(lat)
                 longitudes.append(long)
                 tooltip_folium = 'Node: ' + str(node_id) + '-' + str(node_name)
-                self.add_route_html_node(route_layer, node_color, tooltip_folium, node_id, node_name, address, location, province, zip_code, node_type, items, weight, lat, long, stops_counter)
+                self.add_route_html_node(route_layer, node_color, tooltip_folium, node_id, node_name, address, location, province, zip_code, node_type, items, lat, long, stops_counter)
                 stops_counter = stops_counter + 1
 
             latitudes.append(self.depot_coords[0])
@@ -204,7 +207,7 @@ class Map:
                 self.Folium.add_route_to_map(coordinates, node_color, layer_txt, route_layer, 2)
 
 
-    def add_route_html_node(self, route_layer, node_color, tooltip_folium, node_id, node_name, address, location, province, zip_code, node_type, items, weight, lat, long, stops_counter):
+    def add_route_html_node(self, route_layer, node_color, tooltip_folium, node_id, node_name, address, location, province, zip_code, node_type, items, lat, long, stops_counter):
         """
         Add node marker from route into route layer
         """
@@ -222,7 +225,6 @@ class Map:
         html = html + self.Folium.add_row_to_HTML_table('Zip Code', zip_code, None, left_col_color_2, right_col_color_2)
         html = html + self.Folium.add_row_to_HTML_table('Node Type', node_type, None, left_col_color_1, right_col_color_1)
         html = html + self.Folium.add_row_to_HTML_table('Items', items, None, left_col_color_2, right_col_color_2)
-        html = html + self.Folium.add_row_to_HTML_table('Weight', weight, 'kg.', left_col_color_1, right_col_color_1)
         html = html + self.Folium.add_row_to_HTML_table('Latitude', lat, None, left_col_color_2, right_col_color_2)
         html = html + self.Folium.add_row_to_HTML_table('Longitude', long, None, left_col_color_1, right_col_color_1)
         html = html + self.Folium.add_end_HTML_table()

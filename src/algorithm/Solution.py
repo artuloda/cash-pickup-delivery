@@ -14,67 +14,103 @@ class Solution:
         self.unserved = set(self.instance.nodes_ids[1:])
         self.current_capacity = [0] * self.context.parameters.n_vehicles
         self.current_distance = [0] * self.context.parameters.n_vehicles
+        self.vehicles_initial_load = [0] * self.context.parameters.n_vehicles
         self.current_stock = self.context.parameters.MAX_STOCK * 0.8
         self.total_distance = 0
         self.storage_cost = 0
         self.fitness = 0
 
 
+    # def solve2(self):
+    #     """
+    #     Solve the cash pickup and delivery problem using a greedy approach.
+    #     """
+    #     # Assign routes using a greedy approach
+    #     for vehicle in range(self.context.parameters.n_vehicles):
+    #         previous_node = 0
+    #         while self.unserved:
+    #             # Get random node from unserved
+    #             if previous_node == 0:
+    #                 node = self.random.get_random_choice(list(self.unserved))
+    #             else:
+    #                 # Find the nearest feasible node
+    #                 candidate_nodes = self.find_feasible_nodes(previous_node, vehicle)
+    #                 if not candidate_nodes:
+    #                     break  # No more feasible nodes for this vehicle
+    #                 # Select the next node to visit
+    #                 node, distance = self.select_next_node(candidate_nodes, vehicle)
+                    
+    #             # Update distance and capacity
+    #             distance = self.instance.distances[previous_node][node]
+    #             if self.current_distance[vehicle] + distance + self.instance.distances[node][0] <= self.context.parameters.MAX_DISTANCE:
+    #                 demand = self.instance.demands[node]
+    #                 # Pickup node
+    #                 if demand > 0:
+    #                     if self.current_capacity[vehicle] + demand <= self.context.parameters.VEHICLE_CAPACITY:
+    #                         previous_node = self.add_node_to_route(node, vehicle, distance, demand)
+    #                     else:
+    #                         continue # Skip this node if the capacity is exceeded
+    #                 # Delivery node
+    #                 else:
+    #                     if self.current_capacity[vehicle] - abs(demand) < 0:
+    #                         self.current_stock -= self.current_capacity[vehicle] - abs(demand)
+    #                         self.vehicles_initial_load[vehicle] += self.current_capacity[vehicle] - abs(demand)
+    #                         previous_node = self.add_node_to_route(node, vehicle, distance, demand)
+
+    #             # If the distance is too long, skip this node
+    #             else:
+    #                 continue
+
+    #         # Return to depot
+    #         if self.routes[vehicle]:
+    #             self.total_distance += self.instance.distances[previous_node][0]
+    #             self.current_distance[vehicle] += self.instance.distances[previous_node][0]
+    #             # print(f"Vehicle {vehicle}, nodes: {self.routes[vehicle]}, distance: {self.current_distance[vehicle]}, capacity: {self.current_capacity[vehicle]}, stock: {self.current_stock}")
+
+    #     # Calculate storage stock and total cost
+    #     self.storage_cost = self.instance.calculate_storage_cost(self.current_stock)
+    #     self.fitness = self.instance.calculate_total_cost(self.total_distance)
+    #     # self.print_solution()
+
     def solve(self):
         """
         Solve the cash pickup and delivery problem using a greedy approach.
         """
         # Assign routes using a greedy approach
-        vehicles_initial_load = [0] * self.context.parameters.n_vehicles
         for vehicle in range(self.context.parameters.n_vehicles):
             previous_node = 0
             while self.unserved:
-                # Get random node from unserved
-                if previous_node == 0:
-                    node = self.random.get_random_choice(list(self.unserved))
-                else:
-                    # Find the nearest feasible node
-                    candidate_nodes = self.find_feasible_nodes(previous_node, vehicle)
-                    if not candidate_nodes:
-                        break  # No more feasible nodes for this vehicle
-                    # Select the next node to visit
-                    node, distance = self.select_next_node(candidate_nodes, vehicle)
-                    
-                # Update distance and capacity
-                distance = self.instance.distances[previous_node][node]
-                if distance + self.instance.distances[node][0] <= self.context.parameters.MAX_DISTANCE:
-                    demand = self.instance.demands[node]
-                    # Pickup node
-                    if demand > 0:
-                        if self.current_capacity[vehicle] + demand <= self.context.parameters.VEHICLE_CAPACITY:
-                            self.current_capacity[vehicle] += demand
-                            self.current_distance[vehicle] += distance
-                            self.routes[vehicle].append(node)
-                            self.total_distance += distance
-                            self.current_stock += demand
-                            self.unserved.remove(node)
-                            previous_node = node
-                        else:
-                            continue # Skip this node if the capacity is exceeded
-                    # Delivery node
-                    else:
-                        vehicles_initial_load[vehicle] += abs(demand) - self.current_capacity[vehicle]
-                        self.current_capacity[vehicle] -= abs(demand)
-                        self.current_distance[vehicle] += distance + self.instance.distances[node][0]
-                        self.routes[vehicle].append(node)
-                        self.total_distance += distance
-                        self.current_stock -= abs(demand)
-                        self.unserved.remove(node)
-                        previous_node = node
-                # If the distance is too long, skip this node
-                else:
-                    continue
+                # Find the nearest feasible node
+                candidate_nodes = self.find_feasible_nodes(previous_node, vehicle)
+                if not candidate_nodes:
+                    break  # No more feasible nodes for this vehicle
 
+                # Select the next node to visit
+                node, distance = self.select_next_node(candidate_nodes, vehicle)
+
+                demand = self.instance.demands[node]
+                # # Delivery node
+                # if demand < 0:
+                #     load_after_visit = self.current_capacity[vehicle] + demand
+                #     if load_after_visit < 0:
+                #         value_to_add = abs(demand) - self.current_capacity[vehicle]
+                #         self.current_stock -= value_to_add  # Reduce the current stock
+                #         self.vehicles_initial_load[vehicle] += value_to_add  # Update the vehicles initial load dynamically
+
+                # # Delivery node
+                # if demand < 0:
+                #     value_to_add = self.current_capacity[vehicle] + demand
+                #     if value_to_add < 0:
+                #         self.current_stock -= value_to_add # Reduce the current stock
+                #         self.vehicles_initial_load[vehicle] += abs(value_to_add) # Update the vehicles initial load
+
+                previous_node = self.add_node_to_route(node, vehicle, distance, demand)
+                    
             # Return to depot
             if self.routes[vehicle]:
                 self.total_distance += self.instance.distances[previous_node][0]
                 self.current_distance[vehicle] += self.instance.distances[previous_node][0]
-                # print(f"Vehicle {vehicle}, nodes: {self.routes[vehicle]}, distance: {self.current_distance[vehicle]}, capacity: {self.current_capacity[vehicle]}, stock: {self.current_stock}")
+                print(f"Vehicle {vehicle}, nodes: {self.routes[vehicle]}, distance: {self.current_distance[vehicle]}, capacity: {self.current_capacity[vehicle]}, stock: {self.current_stock}")
 
         # Calculate storage stock and total cost
         self.storage_cost = self.instance.calculate_storage_cost(self.current_stock)
@@ -82,7 +118,7 @@ class Solution:
         # self.print_solution()
 
 
-    def find_feasible_nodes(self,previous_node , vehicle) -> list:
+    def find_feasible_nodes(self, previous_node , vehicle) -> list:
         """
         Find the feasible nodes for a given vehicle. Ensuring capacity, mileage, and stock constraints
 
@@ -95,11 +131,25 @@ class Solution:
         candidate_nodes = []
         depot_node = 0  # Assuming the depot is node 0
         for node in self.unserved:
+            # Check distance constraint
             distance = self.instance.distances[previous_node][node]
-            # Check distance and capacity constraints
-            if self.current_distance[vehicle] + distance + self.instance.distances[node][depot_node] <= self.context.parameters.MAX_DISTANCE and \
-                self.current_capacity[vehicle] + self.instance.demands[node] <= self.context.parameters.VEHICLE_CAPACITY: 
-                candidate_nodes.append((node, distance))
+            if self.current_distance[vehicle] + distance + self.instance.distances[node][depot_node] <= self.context.parameters.MAX_DISTANCE:
+                # Check capacity constraint
+                demand = self.instance.demands[node]
+                value_to_add = self.current_capacity[vehicle] + demand
+                if demand < 0: # Delivery node
+                    if value_to_add <= self.current_stock and value_to_add <= self.context.parameters.VEHICLE_CAPACITY: # Check if the depot has enough stock to deliver the demand:
+                        candidate_nodes.append((node, distance))
+                else: # Pickup node
+                    if value_to_add <= self.context.parameters.VEHICLE_CAPACITY:
+                        candidate_nodes.append((node, distance))
+
+        # for node in self.unserved:
+        #     distance = self.instance.distances[previous_node][node]
+        #     # Check distance and capacity constraints
+        #     if self.current_distance[vehicle] + distance + self.instance.distances[node][depot_node] <= self.context.parameters.MAX_DISTANCE and \
+        #         self.current_capacity[vehicle] + self.instance.demands[node] <= self.context.parameters.VEHICLE_CAPACITY: 
+        #         candidate_nodes.append((node, distance))
         return candidate_nodes
         
 
@@ -146,12 +196,41 @@ class Solution:
         node, distance = min(candidate_nodes, key=evaluate_candidate)
         return node, distance
     
+    
+    def add_node_to_route(self, node: int, vehicle: int, distance: float, demand: int):
+        """
+        Add a node to the route of a vehicle
+
+        Args:
+            node (int): Node to add
+            vehicle (int): Vehicle index
+            distance (float): Distance to the node
+            demand (int): Demand of the node
+        Returns:
+            int: Node added
+        """
+        self.current_capacity[vehicle] += demand
+        self.current_distance[vehicle] += distance
+        self.routes[vehicle].append(node)
+        self.total_distance += distance
+        self.unserved.remove(node)
+
+        # Delivery node
+        if demand < 0:
+            # Calculate the difference before updating the capacity
+            difference = abs(demand) - (self.current_capacity[vehicle] - demand)
+            if difference > 0:
+                self.current_stock -= difference  # Reduce the current stock
+                self.vehicles_initial_load[vehicle] += difference  # Update the vehicles initial load
+                self.current_capacity[vehicle] = 0  # Reset capacity to zero if it goes negative
+        return node
+    
 
     def print_solution(self):
 
         print("Routes per vehicle:")
         for v, route in enumerate(self.routes):
-            current_capacity = self.current_capacity[v]  # Assuming capacities is a list of used capacities per vehicle
+            current_capacity = self.current_capacity[v] # Assuming capacities is a list of used capacities per vehicle
             current_distance = self.current_distance[v]  # Assuming remaining_distance is a list of used distance per vehicle
             print(f"  Vehicle {v + 1}: Depot -> {' -> '.join(map(str, route))} -> Depot | Current capacity: {current_capacity} | Current distance: {current_distance / 1000:.2f} km")
 
@@ -163,6 +242,7 @@ class Solution:
         print(f"Unserved: {self.unserved}")
         print(f"Current capacity: {self.current_capacity}")
         print(f"Current distance: {self.current_distance}")
+        print(f"Vehicles initial load: {self.vehicles_initial_load}")
         print("-----------------------------------------------------------------------------------")
     
 

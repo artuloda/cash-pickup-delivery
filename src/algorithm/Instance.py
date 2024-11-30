@@ -9,6 +9,7 @@ class Instance:
         self.Geo = Geo()
         self.context = context
         self.nodes_df = self.IO.read_csv(self.context.parameters.input_file_path + '/nodes.csv', separator=';', decimal=',', encoding='latin-1')
+        self.depot_df = self.nodes_df[self.nodes_df['Id'] == 0]
         self.demands = self.load_demands()
         self.nodes_ids = self.load_nodes_ids()
         self.distances = self.load_distances()
