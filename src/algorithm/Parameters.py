@@ -30,7 +30,7 @@ class Parameters:
         Returns:
             int: The execution seed
         """
-        random_seed = 12345678 # random.randint(1, 1000000000)
+        random_seed = 1234567 # random.randint(1, 1000000000)
         random.seed(random_seed)
         np.random.seed(random_seed)
         return random_seed

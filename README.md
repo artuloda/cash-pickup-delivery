@@ -1,12 +1,4 @@
-A secure and efficient cash transportation management system designed to optimize routes, manage vehicle capacities, and ensure timely deliveries.
-
-## Features
-
-- Real-time tracking of cash pickups and deliveries
-- Secure authentication and authorization
-- Route optimization for efficient deliveries
-- Detailed transaction history and reporting
-- Mobile-friendly interface
+A secure and efficient cash transportation management system designed to optimize routes and manage vehicle capacities.
 
 ## Getting Started
 
@@ -64,8 +56,6 @@ The algorithm is implemented in `src/algorithm/Algorithm.py` and `src/algorithm/
   - Calculates the fitness of each solution based on total distance, storage cost, and unserved nodes.
 
 ### Usage
-
-#### Main Execution Script
 
 The main execution is handled by the `src/main.py` script. This script is responsible for setting up the problem context, initializing the algorithm, and processing the results. Below is a brief overview of its components:
 

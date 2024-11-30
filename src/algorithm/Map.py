@@ -1,5 +1,5 @@
 from algorithm import Context, Instance, Solution
-from utils import Folium, Geo, IO, Here, StaticRepresentation, Thread
+from utils import Folium, Geo, IO, Here, Thread
 import pandas as pd
 class Map:
     def __init__(self, context: Context, instance: Instance, solution: Solution, routes_df: pd.DataFrame, metrics_df: pd.DataFrame):
@@ -8,7 +8,6 @@ class Map:
         self.Geo = Geo()
         self.Here = Here()
         self.Thread = Thread()
-        self.StaticRepresentation = StaticRepresentation()
         self.context = context
         self.instance = instance
         self.solution = solution
@@ -233,13 +232,13 @@ class Map:
             longitudes.append(self.depot_coords[1])
             coordinates = self.Geo.create_list_of_list_coordinates(latitudes, longitudes)
             if len(coordinates) > 2:
-                # route_info_here = self.Here.calculate_route_HERE(coordinates, 'car', self.context.parameters.here_API_key)
-                # route_coordinates_here = route_info_here[0]
-                # route_distance = route_info_here[1]
-                # route_time = route_info_here[2]
-                # print('Route:', layer_txt, ' has a distance of ', route_distance, ' and a duration of ', route_time)
-                # self.Folium.add_route_to_map(route_coordinates_here, node_color, layer_txt, route_layer, 2)
-                self.Folium.add_route_to_map(coordinates, node_color, layer_txt, route_layer, 2)
+                route_info_here = self.Here.calculate_route_HERE(coordinates, 'car', self.context.parameters.here_API_key)
+                route_coordinates_here = route_info_here[0]
+                route_distance = route_info_here[1]
+                route_time = route_info_here[2]
+                print('Route:', layer_txt, ' has a distance of ', route_distance, ' and a duration of ', route_time)
+                self.Folium.add_route_to_map(route_coordinates_here, node_color, layer_txt, route_layer, 2)
+                # self.Folium.add_route_to_map(coordinates, node_color, layer_txt, route_layer, 2)
 
 
     def add_route_html_node(self, route_layer, node_color, tooltip_folium, node_id, node_name, address, location, province, zip_code, node_type, items, lat, long, stops_counter):
